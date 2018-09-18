@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'operations',
     'profiles',
 
+    'rest_auth',
     'rest_framework',
     'rest_framework.authtoken',  # only if you use token authentication
     'fcm_django',
@@ -97,6 +98,8 @@ REST_FRAMEWORK = {
     ),
     'DATETIME_FORMAT': "%d-%m-%Y %H:%M",
 }
+
+FCM_DEVICE_MODEL = 'operations.MyDevice'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
