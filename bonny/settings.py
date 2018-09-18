@@ -25,7 +25,7 @@ SECRET_KEY = 'd+!d=(n(m&$&7+db(&ad-_lfeyw2%3=_sr1$_zo^9y0o3!$utv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'operations',
+    'profiles',
+
+    'rest_framework',
+    'rest_framework.authtoken',  # only if you use token authentication
+    'fcm_django',
 ]
 
 MIDDLEWARE = [
@@ -81,6 +88,16 @@ DATABASES = {
 }
 
 
+
+REST_FRAMEWORK = {
+     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DATETIME_FORMAT': "%d-%m-%Y %H:%M",
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -118,3 +135,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+SECURE_SSL_REDIRECT = True
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
