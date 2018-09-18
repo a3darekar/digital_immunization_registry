@@ -1,0 +1,3 @@
+**/*.pyc
+bonny/local_settings.py
+*.sqlite3
