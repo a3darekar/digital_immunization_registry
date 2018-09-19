@@ -1,57 +1,42 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from .models import *
 from django.contrib import admin
+from .models import *
 
 # Register your models here.
-class HealthCareAdmin(admin.ModelAdmin):
-	fieldsets = [
-		('Basic Information',		{'fields': ['name', 'email']}),
-		('Contact Information',		{'fields': ['address', 'contact']})
-	]
-	def name(self, obj):
-		return obj.get_full_name()
-
-	list_display = ('name', 'email', 'address', 'contact')	
-
 
 class ParentAdmin(admin.ModelAdmin):
 	fieldsets = [
 		('Login Information',		{'fields': ['user']}),
-		('Account Information',		{'fields': ['first_name', 'last_name', 'email', 'unique_id']}),
-		('Contact Information',		{'fields': ['address', 'contact']})
+		('Account Information',		{'fields': ['first_name', 'last_name', 'unique_id']}),
+		('Contact Information',		{'fields': ['address', 'contact',  'email']})
 	]
 	def name(self, obj):
 		return obj.get_full_name()
 
-	list_display = ('name', 'email', 'contact')	
-
+	list_display = ('name', 'email', 'contact')
 
 class ClinitianAdmin(admin.ModelAdmin):
 	fieldsets = [
-		('Login Information',				{'fields': ['user']}),
-		('Account Information',				{'fields': ['first_name', 'last_name', 'unique_id']}),
-		('Contact Information',				{'fields': ['email', 'contact']}),
-		('Health Care Centre Information',	{'fields': ['health_care_centre']}),
+		('Login Information',		{'fields': ['user']}),
+		('Account Information',		{'fields': ['first_name', 'last_name']}),
+		('Contact Information',		{'fields': ['email', 'contact']})
 	]
 	def name(self, obj):
 		return obj.get_full_name()
 
-	list_display = ('name', 'email', 'contact')	
+	list_display = ('name', 'email', 'contact')
 
 
 class BabyAdmin(admin.ModelAdmin):
 	fieldsets = [
+		('Personal Information',		{'fields': ['first_name', 'last_name',]}),
 		('Parent Information',			{'fields': ['parent']}),
-		('Personal Information',		{'fields': ['first_name', 'last_name', 'tag']}),
-		('Medical Information',			{'fields': ['special_notes']}),
-		('Miscellaneous Information',	{'fields': ['place_of_birth', 'blood_group', 'weight', 'gender', 'birth_date', 'text_notifications']})
+		('Medical Information',			{'fields': ['place_of_birth', 'weight', 'blood_group', 'birth_date', 'gender']}),
+		('Administration Information',	{'fields': ['tag', 'special_notes', 'text_notifications']})
 	]
 	def name(self, obj):
 		return obj.get_full_name()
 
 	list_display = ('name', 'gender', 'birth_date')
-
 
 class VaccineScheduleAdmin(admin.ModelAdmin):
 	def Baby(self, obj):
@@ -61,17 +46,22 @@ class VaccineScheduleAdmin(admin.ModelAdmin):
 		return ("%s" % (obj.status)).upper()
 	vaccine_status.short_description = 'Vaccine Status'
 
-	list_display = ('Baby', 'vaccine', 'vaccine_status', 'week', 'tentative_vaccination_date')
+	list_display = ('Baby', 'vaccine', 'vaccine_status', 'week', 'tentative_date')
 
+class VaccineRecordAdmin(admin.ModelAdmin):
+	"""docstring for AppointmentAdmin"""
+	
+	def Clinitian(self, obj):
+		return obj.doctor.get_full_name()
 
-admin.site.register(HealthCare, HealthCareAdmin)
+	def Baby(self, obj):
+		return obj.baby.get_full_name()
+
+	list_display = ('Baby', 'status', 'administered_on')
+
 
 admin.site.register(Parent, ParentAdmin)
-
-admin.site.register(Clinitian, ClinitianAdmin)
-
 admin.site.register(Baby, BabyAdmin)
-
+admin.site.register(Clinitian, ClinitianAdmin)
 admin.site.register(VaccineSchedule, VaccineScheduleAdmin)
-
-admin.site.register(VaccineRecord)
+admin.site.register(VaccineRecord, VaccineRecordAdmin)

@@ -1,4 +1,4 @@
-Vaccines = (
+Vaccinations = (
 	(0, (
 		#	at birth
 			('bcg', 		'BCG'),
@@ -49,7 +49,7 @@ Vaccines = (
 	),
 )
 
-gender = (
+Gender = (
 	('male', 'Male'),
 	('female', 'Female'),
 )
@@ -60,16 +60,20 @@ Vaccine_status = (
 	('administered', 'Administered'),
 )
 
-Blood_Group = (
+Appointmnet_status = (
+	('pending', 'Pending'),
+	('scheduled', 'Scheduled'),
+	('cancelled', 'Cancelled'),
+	('approved', 'Approved')
+)
+
+BloodGroup = (
 	('a_positive', 'A Positive'),
 	('a_negative', 'A Negative'),
-	
 	('b_positive', 'B Positive'),
 	('b_negative', 'B Negative'),
-	
 	('o_positive', 'O Positive'),
 	('o_negative', 'O Negative'),
-	
-	('ab_positive', 'AB positive'),
-	('abnegative', 'AB negative'),
+	('ab_positive', 'AB Positive'),
+	('ab_negative', 'AB Negative'),
 )
