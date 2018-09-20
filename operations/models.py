@@ -7,12 +7,19 @@ from phonenumber_field.modelfields import PhoneNumberField
 from .choices import *
 
 
-class HealthCare(object):
+class HealthCare(models.Model):
 	"""docstring for HealthCare"""
 	name 		= models.CharField(max_length = 50)
 	address 	= models.CharField(max_length = 140)
 	email 		= models.EmailField(unique = True)
-	contact 	= PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")		
+	contact 	= PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
+
+	class Meta:
+		verbose_name 		= ('Primary Health Care')
+		verbose_name_plural = ('Primary Health Cares')
+
+	def __str__(self):
+		return self.name
 
 class Parent(models.Model):
 	"""Parent credentials for login and contact"""
@@ -41,16 +48,26 @@ class Parent(models.Model):
 	def get_short_name(self):
 		return self.first_name
 
+	def save(self):
+		if not self.pk:
+			super(Parent, self).save()
+			user = self.user
+			user.first_name = self.first_name 
+			user.last_name = self.last_name 
+			user.email = self.email 
+			user.save()
+		super(Parent, self).save()
+
+
 class Clinitian(models.Model):
 	"""Clinitian access"""
 	user 			= models.OneToOneField(User, help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.")
 	email 			= models.EmailField(('email address'), unique=True)
 	first_name 		= models.CharField(('first name'), max_length=30, blank=True)
 	last_name 		= models.CharField(('last name'), max_length=30, blank=True)
-	email 			= models.EmailField(('email address'), unique=True)
 	contact 		= PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
 	unique_id 		= models.CharField(('Aadhaar ID'), max_length = 13, validators=[RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
-
+	HealthCare 		= models.ForeignKey(HealthCare)
 
 	USERNAME_FIELD = 'user'
 	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', contact]
@@ -59,7 +76,15 @@ class Clinitian(models.Model):
 		return self.get_full_name()
 
 	def save(self):
-		super(Doctor, self).save()
+		if not self.pk:
+			super(Clinitian, self).save()
+			user = self.user
+			user.first_name = self.first_name 
+			user.last_name = self.last_name 
+			user.email = self.email 
+			user.save()
+		super(Clinitian, self).save()
+
 
 	class Meta:
 		verbose_name 		= ('Clinitian')
@@ -107,24 +132,13 @@ class Baby(models.Model):
 		days =  datetime.today().date().weekday() - self.birth_date.weekday() 
 		return days/7
 
-	def notify(self, to, body, *args, **kwargs):
-		try:
-			message = client.messages.create( to = to, from_ = phone_number, body = body)
-			print(message.sid)
-		except TwilioRestException as e:
-			print(e)
-
-
 	def save(self, *args, **kwargs):
 		if self.pk:
 			super(Baby, self).save()	
 		else:
 			super(Baby, self).save()
 			parent = self.parent
-	
-			self.notify(to = str(self.parent.contact), body="Baby's profile is linked with This email Account " + str(self.parent.email) + " Please login through Bonny App/Website to see more Details.")
 
-			send_mail('Baby Account Created', "Baby's profile is linked with This email Account", 'knowhere.1998@gmail.com', [parent.email], fail_silently=False,)
 		# Add Vaccine with the probable Dosage date
 			Vaccines = dict(Vaccinations)
 			for week,vaccine in Vaccines.items():
@@ -132,11 +146,10 @@ class Baby(models.Model):
 				for name, Name in my_dict.items():
 					v = VaccineSchedule(baby = self, vaccine = name, week = week, tentative_date = self.birth_date+timedelta(week*7), status = 'pending')
 					v.save()
-			# Save object to database
 		return self
 
 class VaccineSchedule(models.Model):
-	"""List of Vaccines in to br Administered"""
+	"""Schedule of Vaccines in to br Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_schedules")
 	vaccine 			= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	week				= models.PositiveIntegerField(default = 0)

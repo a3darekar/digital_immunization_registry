@@ -18,7 +18,8 @@ class ClinitianAdmin(admin.ModelAdmin):
 	fieldsets = [
 		('Login Information',		{'fields': ['user']}),
 		('Account Information',		{'fields': ['first_name', 'last_name']}),
-		('Contact Information',		{'fields': ['email', 'contact']})
+		('Contact Information',		{'fields': ['email', 'contact']}),
+		('Misc Information',		{'fields': ['HealthCare']}),
 	]
 	def name(self, obj):
 		return obj.get_full_name()
@@ -65,3 +66,4 @@ admin.site.register(Baby, BabyAdmin)
 admin.site.register(Clinitian, ClinitianAdmin)
 admin.site.register(VaccineSchedule, VaccineScheduleAdmin)
 admin.site.register(VaccineRecord, VaccineRecordAdmin)
+admin.site.register(HealthCare)
