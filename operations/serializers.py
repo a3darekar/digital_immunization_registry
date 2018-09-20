@@ -10,7 +10,6 @@ class ClinitianSerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 	= Clinitian
 		fields = ('user', 'email', 'first_name', 'last_name', 'contact', 'unique_id', 'HealthCare')
-		read_only_fields = ('user','email', 'HealthCare')
 
 class ClinitianViewset(viewsets.ModelViewSet):
 	"""ClinitianViewset for REST Endpoint"""
