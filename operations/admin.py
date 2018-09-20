@@ -1,7 +1,14 @@
 from django.contrib import admin
 from .models import *
-
+from django import forms
 # Register your models here.
+
+class BabyModelForm( forms.ModelForm ):
+	special_notes = forms.CharField( widget=forms.Textarea )
+	class Meta:
+		model = Baby
+		fields = '__all__'
+
 
 class ParentAdmin(admin.ModelAdmin):
 	fieldsets = [
@@ -34,6 +41,9 @@ class BabyAdmin(admin.ModelAdmin):
 		('Medical Information',			{'fields': ['place_of_birth', 'weight', 'blood_group', 'birth_date', 'gender']}),
 		('Administration Information',	{'fields': ['tag', 'special_notes', 'text_notifications']})
 	]
+
+	form = BabyModelForm
+
 	def name(self, obj):
 		return obj.get_full_name()
 

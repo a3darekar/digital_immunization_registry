@@ -48,7 +48,7 @@ class Parent(models.Model):
 	def get_short_name(self):
 		return self.first_name
 
-	def save(self, force_insert=False, force_update=False, using=None):
+	def save(self, *args, **kwargs):
 		if not self.pk:
 			super(Parent, self).save()
 			user = self.user
@@ -75,7 +75,7 @@ class Clinitian(models.Model):
 	def __str__(self):
 		return self.get_full_name()
 
-	def save(self, force_insert=False, force_update=False, using=None):
+	def save(self, *args, **kwargs):
 		if not self.pk:
 			super(Clinitian, self).save()
 			user = self.user
