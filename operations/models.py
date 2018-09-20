@@ -48,7 +48,7 @@ class Parent(models.Model):
 	def get_short_name(self):
 		return self.first_name
 
-	def save(self):
+	def save(self, force_insert=False, force_update=False, using=None):
 		if not self.pk:
 			super(Parent, self).save()
 			user = self.user
@@ -75,7 +75,7 @@ class Clinitian(models.Model):
 	def __str__(self):
 		return self.get_full_name()
 
-	def save(self):
+	def save(self, force_insert=False, force_update=False, using=None):
 		if not self.pk:
 			super(Clinitian, self).save()
 			user = self.user
@@ -107,8 +107,8 @@ class Baby(models.Model):
 	parent 				= models.ForeignKey(Parent, related_name = "baby")
 	place_of_birth		= models.CharField(('Place of Birth'), max_length=120)
 	weight				= models.PositiveIntegerField(default = 10)
-	blood_group			= models.CharField('gender', max_length = 10, choices = BloodGroup)
-	gender				= models.CharField('gender', max_length = 10, choices = Gender)
+	blood_group			= models.CharField('Blood Group', max_length = 10, choices = BloodGroup)
+	gender				= models.CharField('Gender', max_length = 10, choices = Gender)
 	birth_date			= models.DateTimeField(('Birth Date'),default=datetime.now)
 	special_notes		= models.CharField(('Special Notes'), max_length = 400, help_text = 'Any Medical conditions such as allergies are to be mentioned here')
 	text_notifications 	= models.BooleanField(default = True)

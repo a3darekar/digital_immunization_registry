@@ -11,12 +11,21 @@ class ClinitianSerializer(serializers.ModelSerializer):
 		model 	= Clinitian
 		fields = ('user', 'email', 'first_name', 'last_name', 'contact', 'unique_id', 'HealthCare')
 
+
+
 class ClinitianViewset(viewsets.ModelViewSet):
 	"""ClinitianViewset for REST Endpoint"""
-	serializer_class 	= ClinitianSerializer
-	queryset 			= Clinitian.objects.all()
+	serializer_class = ClinitianSerializer
 	
-router.register(r'phc_emp', ClinitianViewset)
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			return Clinitian.objects.get(user = user)
+		else:
+			return Clinitian.objects.none()
+
+
+router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-details')
 
 router.register(r'devices', FCMDeviceViewSet)
 router.register(r'authdevices', FCMDeviceAuthorizedViewSet)
