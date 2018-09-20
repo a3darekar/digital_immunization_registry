@@ -52,14 +52,19 @@ class BabyTagList(generics.ListAPIView):
 	def get_queryset(self):
 		queryset 	= Baby.objects.none()
 		tag 		= self.request.query_params.get('tag', None)
-		parent 		= self.request.query_params.get('parent', None)
+		email 		= self.request.query_params.get('email', None)
+		contact		= self.request.query_params.get('contact', None)
 		name 		= self.request.query_params.get('name', None)
 		aadhaar 	= self.request.query_params.get('aadhaar', None)
 		if tag is not None:
-			queryset = Baby.objects.filter(tag=tag)
+			queryset = Baby.objects.filter(tag__contains = tag)
 		elif name is not None:
 			queryset = Baby.objects.filter(first_name__contains = name) | Baby.objects.filter(last_name__contains = name) 
-		elif parent is not None:
+		elif email is not None:
+			parent = Parent.objects.filter(email = email)
+			queryset = Baby.objects.filter(parent = parent)
+		elif contact is not None:
+			parent = Parent.objects.filter(contact = contact)
 			queryset = Baby.objects.filter(parent = parent)
 		elif aadhaar is not None:
 			parent = Parent.objects.filter(unique_id = aadhaar)
