@@ -2,6 +2,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
 
 from .models import Clinitian, Parent, Baby
 
@@ -14,8 +15,8 @@ class ClinitianSerializer(serializers.ModelSerializer):
 
 class ClinitianViewset(viewsets.ModelViewSet):
 	"""ClinitianViewset for REST Endpoint"""
-	serializer_class = ClinitianSerializer
-	permission_classes = (IsAuthenticated,)
+	serializer_class 	= ClinitianSerializer
+	permission_classes 	= (IsAuthenticated,)
 	
 	def get_queryset(self):
 		user = self.request.user
@@ -31,16 +32,9 @@ class ParentSerializer(serializers.ModelSerializer):
 
 class ParentViewset(viewsets.ModelViewSet):
 	"""ParentViewset for REST Endpoint"""
-	serializer_class = ParentSerializer
-	permission_classes = (IsAuthenticated,)
-	
-	def get_queryset(self):
-		user = self.request.user
-		if user.is_authenticated:
-			return Parent.objects.filter(user = user)
-		else:
-			return Parent.objects.none()
-
+	serializer_class 	= ParentSerializer
+	permission_classes 	= (IsAuthenticated,)
+	queryset 			= Parent.objects.all()
 
 class BabySerializer(serializers.ModelSerializer):
 	class Meta:	
@@ -49,23 +43,53 @@ class BabySerializer(serializers.ModelSerializer):
 
 class BabyViewset(viewsets.ModelViewSet):
 	"""BabyViewset for REST Endpoint"""
-	serializer_class = BabySerializer
-	permission_classes = (IsAuthenticated,)
-	
+	serializer_class 	= BabySerializer
+	permission_classes 	= (IsAuthenticated,)
+
 	def get_queryset(self):
+		user 		= self.request.user
+		parent 		= Parent.objects.filter(user = user)
+		if parent:
+			return Baby.objects.filter(parent = parent)
+		queryset 	= Baby.objects.all()
+		tag 		= self.request.query_params.get('tag', None)
+		email 		= self.request.query_params.get('email', None)
+		contact		= self.request.query_params.get('contact', None)
+		name 		= self.request.query_params.get('name', None)
+		aadhaar 	= self.request.query_params.get('aadhaar', None)
+		if tag is not None:
+			queryset = Baby.objects.filter(tag__contains = tag)
+		elif name is not None:
+			queryset = Baby.objects.filter(first_name__contains = name) | Baby.objects.filter(last_name__contains = name) 
+		elif email is not None:
+			parent = Parent.objects.filter(email = email)
+			queryset = Baby.objects.filter(parent = parent)
+		elif contact is not None:
+			parent = Parent.objects.filter(contact = contact)
+			queryset = Baby.objects.filter(parent = parent)
+		elif aadhaar is not None:
+			parent = Parent.objects.filter(unique_id = aadhaar)
+			print parent
+			queryset = Baby.objects.filter(parent = parent)
+		return queryset
+
+
+class ParentList(generics.ListAPIView):
+	serializer_class = ParentSerializer
+
+	def get_queryset(self):
+		"""
+		This view should return a list of all the purchases
+		for the currently authenticated user.
+		"""
 		user = self.request.user
-		if user.is_authenticated:
-			return Baby.objects.filter(user = user)
-		else:
-			return Baby.objects.none()
-
-
+		return Parent.objects.filter(user=user)
 
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
 
-router.register(r'parent', ParentViewset, base_name = 'parent-rest-details')
+router.register(r'parent', ParentViewset, base_name = 'parent-rest')
 
-router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
+router.register(r'babies',BabyViewset, base_name = 'babies-search-list')
 
 router.register(r'devices', FCMDeviceViewSet)
 
