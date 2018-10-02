@@ -3,8 +3,9 @@ from rest_framework.routers import DefaultRouter
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
+from choices import Vaccinations, vaccine_names, Vaccine_status
 
-from .models import Clinitian, Parent, Baby
+from .models import Clinitian, Parent, Baby, VaccineSchedule
 
 router = DefaultRouter()
 
@@ -85,11 +86,45 @@ class ParentList(generics.ListAPIView):
 		user = self.request.user
 		return Parent.objects.filter(user=user)
 
+
+
+class VaccineScheduleSerializer(serializers.ModelSerializer):
+	class Meta:	
+		model 	= VaccineSchedule
+		fields  = ('baby', 'vaccine', 'week', 'tentative_date', 'status')
+
+	vaccine = serializers.SerializerMethodField()
+
+	def get_vaccine(self, obj):
+		vaccinations = dict(vaccine_names)
+		obj.vaccine = vaccinations[obj.vaccine]
+		return obj.vaccine
+	
+
+class VaccineScheduleViewset(viewsets.ModelViewSet):
+	"""VaccineScheduleViewset for REST Endpoint"""
+	serializer_class 	= VaccineScheduleSerializer
+	permission_classes 	= (IsAuthenticated,)
+	
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', 0)
+			if pk is not 0:
+				baby = Baby.objects.get(pk = pk)
+				return VaccineSchedule.objects.filter(baby = baby)
+			else:
+				VaccineSchedule.objects.none()
+		else:
+			return Parent.objects.none()
+
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
 
 router.register(r'parent', ParentViewset, base_name = 'parent-rest')
 
 router.register(r'babies',BabyViewset, base_name = 'babies-search-list')
+
+router.register(r'schedule',VaccineScheduleViewset, base_name = 'vaccine-schedule-list')
 
 router.register(r'devices', FCMDeviceViewSet)
 
