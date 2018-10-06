@@ -29,7 +29,7 @@ class ClinitianViewset(viewsets.ModelViewSet):
 class ParentSerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 	= Parent
-		fields  = ('user', 'email', 'first_name', 'last_name', 'address', 'contact', 'unique_id')
+		fields  = ('id', 'user', 'email', 'first_name', 'last_name', 'address', 'contact', 'unique_id')
 
 class ParentViewset(viewsets.ModelViewSet):
 	"""ParentViewset for REST Endpoint"""
