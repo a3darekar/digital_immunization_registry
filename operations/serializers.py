@@ -167,8 +167,8 @@ class HealthCareSerializer(serializers.ModelSerializer):
 	"""docstring for HealthCareSerializer"""
 	class Meta:
 		model 				= HealthCare
-		fields 				= ('name', 'address', 'email', 'contact')
-		read_only_fields 	= ('name', 'address', 'email', 'contact')
+		fields 				= ('id', 'name', 'address', 'email', 'contact')
+		read_only_fields 	= ('id', 'name', 'address', 'email', 'contact')
 
 class HealthCareViewSet(viewsets.ModelViewSet):
 	"""docstring for HealthCareViewSet"""
