@@ -154,7 +154,7 @@ class VaccineSchedule(models.Model):
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_schedules")
 	vaccine 			= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	week				= models.PositiveIntegerField(default = 0)
-	tentative_date 		= models.DateField(default = datetime.now)	
+	tentative_date 		= models.DateTimeField(default = datetime.now)	
 	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
 	
 
@@ -171,7 +171,7 @@ class VaccineSchedule(models.Model):
 class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
-	administered_on 	= models.DateField(default = datetime.now)	
+	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")	
 	
 	def get_full_name(self):
