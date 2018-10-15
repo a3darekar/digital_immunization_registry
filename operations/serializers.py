@@ -40,7 +40,7 @@ class ParentViewset(viewsets.ModelViewSet):
 class BabySerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 	= Baby
-		fields  = ('id', 'first_name', 'last_name', 'tag', 'parent', 'place_of_birth', 'weight', 'blood_group', 'gender', 'birth_date', 'special_notes', 'text_notifications', 'baby')
+		fields  = ('id', 'first_name', 'last_name', 'tag', 'parent', 'place_of_birth', 'weight', 'blood_group', 'gender', 'birth_date', 'special_notes', 'text_notifications', 'week')
 
 class BabyViewset(viewsets.ModelViewSet):
 	"""BabyViewset for REST Endpoint"""
