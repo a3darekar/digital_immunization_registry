@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from choices import Vaccinations, vaccine_names, Vaccine_status
 
-from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment
+from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare
 
 router = DefaultRouter()
 
@@ -163,7 +163,28 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 	permission_classes 	= (IsAuthenticated, )
 	queryset 			= Appointment.objects.all()
 
+class HealthCareSerializer(serializers.ModelSerializer):
+	"""docstring for HealthCareSerializer"""
+	class Meta:
+		model 				= HealthCare
+		fields 				= ('name', 'address', 'email', 'contact')
+		read_only_fields 	= ('name', 'address', 'email', 'contact')
+
+class HealthCareViewSet(viewsets.ModelViewSet):
+	"""docstring for HealthCareViewSet"""
+	serializer_class 	= HealthCareSerializer
+	permission_classes  = (IsAuthenticated, )
+
+	def get_queryset(self):
+		pk = self.request.query_params.get('pk', None)
+		if pk is not None:
+			return HealthCare.objects.filter(pk = pk)
+		else:
+			return HealthCare.objects.all()
+
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
+
+router.register(r'healthcare', HealthCareViewSet, base_name = 'healthcare-list')
 
 router.register(r'parent', ParentViewset, base_name = 'parent-rest')
 
