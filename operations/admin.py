@@ -59,21 +59,27 @@ class VaccineScheduleAdmin(admin.ModelAdmin):
 
 	list_display = ('Baby', 'vaccine', 'vaccine_status', 'week', 'tentative_date')
 
-class VaccineRecordAdmin(admin.ModelAdmin):
+class AppointmentAdmin(admin.ModelAdmin):
 	"""docstring for AppointmentAdmin"""
 	
-	def Clinitian(self, obj):
-		return obj.doctor.get_full_name()
-
 	def Baby(self, obj):
 		return obj.baby.get_full_name()
 
-	list_display = ('Baby', 'status', 'administered_on')
+	list_display = ('Baby', 'administered_at', 'administered_on')
+
+class VaccineRecordAdmin(admin.ModelAdmin):
+	"""docstring for VaccineRecordAdmin"""
+
+	def Appointment(self, obj):
+		return obj.appointment.pk
+	
+	list_display = ('Appointment', 'vaccine', 'dose', 'status', 'amount')
 
 
 admin.site.register(Parent, ParentAdmin)
 admin.site.register(Baby, BabyAdmin)
 admin.site.register(Clinitian, ClinitianAdmin)
 admin.site.register(VaccineSchedule, VaccineScheduleAdmin)
+admin.site.register(Appointment, AppointmentAdmin)
 admin.site.register(VaccineRecord, VaccineRecordAdmin)
 admin.site.register(HealthCare)

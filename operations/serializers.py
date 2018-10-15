@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from choices import Vaccinations, vaccine_names, Vaccine_status
 
-from .models import Clinitian, Parent, Baby, VaccineSchedule
+from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment
 
 router = DefaultRouter()
 
@@ -40,7 +40,7 @@ class ParentViewset(viewsets.ModelViewSet):
 class BabySerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 	= Baby
-		fields  = ('id', 'first_name', 'last_name', 'tag', 'parent', 'place_of_birth', 'weight', 'blood_group', 'gender', 'birth_date', 'special_notes', 'text_notifications',)
+		fields  = ('id', 'first_name', 'last_name', 'tag', 'parent', 'place_of_birth', 'weight', 'blood_group', 'gender', 'birth_date', 'special_notes', 'text_notifications', 'baby')
 
 class BabyViewset(viewsets.ModelViewSet):
 	"""BabyViewset for REST Endpoint"""
@@ -109,8 +109,8 @@ class VaccineScheduleViewset(viewsets.ModelViewSet):
 	def get_queryset(self):
 		user = self.request.user
 		if user.is_authenticated:
-			pk = self.request.query_params.get('pk', 0)
-			if pk is not 0:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
 				baby = Baby.objects.get(pk = pk)
 				return VaccineSchedule.objects.filter(baby = baby)
 			else:
@@ -118,11 +118,60 @@ class VaccineScheduleViewset(viewsets.ModelViewSet):
 		else:
 			return Parent.objects.none()
 
+
+
+class VaccineRecordSerializer(serializers.ModelSerializer):
+	class Meta:	
+		model 				= VaccineRecord
+		fields  			= ('phc', 'vaccine', 'dose', 'status', 'amount')
+		read_only_fields 	= ('phc', 'vaccine', 'dose', 'status', 'amount')
+
+
+	vaccine = serializers.SerializerMethodField()
+
+	def get_vaccine(self, obj):
+		vaccinations = dict(vaccine_names)
+		obj.vaccine = vaccinations[obj.vaccine]
+		return obj.vaccine
+
+class VaccineRecordViewset(viewsets.ModelViewSet):
+	"""VaccineRecordViewset for REST Endpoint"""
+	serializer_class 	= VaccineRecordSerializer
+	permission_classes 	= (IsAuthenticated,)
+	
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
+				appointment = Appointment.objects.get(pk = pk)
+				return VaccineRecord.objects.filter(phc = appointment)
+			else:
+				VaccineRecord.objects.none()
+		else:
+			return Parent.objects.none()
+
+class AppointmentSerializer(serializers.ModelSerializer):
+	class Meta:	
+		model 				= Appointment
+		fields  			= ('id', 'baby', 'administered_at', 'administered_on')
+		read_only_fields 	= ('id', 'administered_on')
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+	"""docstring for AppointmentViewSet"""
+	serializer_class 	= AppointmentSerializer
+	permission_classes 	= (IsAuthenticated, )
+	queryset 			= Appointment.objects.all()
+
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
 
 router.register(r'parent', ParentViewset, base_name = 'parent-rest')
 
 router.register(r'babies',BabyViewset, base_name = 'babies-search-list')
+
+router.register(r'vaccinations',VaccineRecordViewset, base_name = 'vaccine-record-list')
+
+router.register(r'appointments',AppointmentViewSet, base_name = 'appointment-list')
 
 router.register(r'schedule',VaccineScheduleViewset, base_name = 'vaccine-schedule-list')
 

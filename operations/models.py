@@ -110,6 +110,7 @@ class Baby(models.Model):
 	blood_group			= models.CharField('Blood Group', max_length = 10, choices = BloodGroup)
 	gender				= models.CharField('Gender', max_length = 10, choices = Gender)
 	birth_date			= models.DateTimeField(('Birth Date'),default=datetime.now)
+	week 				= models.PositiveIntegerField(default=0)
 	special_notes		= models.CharField(('Special Notes'), max_length = 400, help_text = 'Any Medical conditions such as allergies are to be mentioned here')
 	text_notifications 	= models.BooleanField(default = True)
 
@@ -139,7 +140,7 @@ class Baby(models.Model):
 			super(Baby, self).save()
 			parent = self.parent
 
-		# Add Vaccine with the probable Dosage date
+		# Add Vaccine with the tentative date
 			Vaccines = dict(Vaccinations)
 			for week,vaccine in Vaccines.items():
 				my_dict = dict(vaccine)
@@ -156,6 +157,23 @@ class VaccineSchedule(models.Model):
 	tentative_date 		= models.DateField(default = datetime.now)	
 	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
 	
+
+	class Meta:
+		unique_together 	= (('baby','vaccine'))
+		
+	def get_full_name(self):
+		return self.baby
+
+	def days_from_today(self):
+		return self.tentative_date - datetime.today().date()
+
+
+class Appointment(models.Model):
+	"""List of Vaccines that have been Administered"""
+	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
+	administered_on 	= models.DateField(default = datetime.now)	
+	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")	
+	
 	def get_full_name(self):
 		return self.baby
 
@@ -164,16 +182,12 @@ class VaccineSchedule(models.Model):
 
 
 class VaccineRecord(models.Model):
-	"""List of Vaccines that have been Administered"""
-	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
-	vaccine 			= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
-	administered_on 	= models.DateField(default = datetime.now)	
-	administered_at 	= models.DateField(default = datetime.now)	
-	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
+	"""docstring for VaccineRecord"""
+	appointment = models.ForeignKey(Appointment, related_name="Appointment")
+	vaccine 	= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
+	dose 		= models.CharField(max_length=90, default="Generic Doesage", help_text="name of vaccine dose with Company name")
+	status		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
+	amount		= models.PositiveIntegerField('Dosage Amount', default=10, help_text="Dosage amount in ml")
 
-		
-	def get_full_name(self):
-		return self.baby
-
-	def days_from_today(self):
-		return self.tentative_date - datetime.today().date()
+	class Meta:
+		unique_together 	= (('appointment','vaccine'))
