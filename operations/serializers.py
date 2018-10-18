@@ -145,23 +145,19 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 			pk = self.request.query_params.get('pk', None)
 			if pk is not None:
 				appointment = Appointment.objects.get(pk = pk)
-				return VaccineRecord.objects.filter(phc = appointment)
+				if appointment is not None:
+					return VaccineRecord.objects.filter(phc = appointment)
+				else:
+					return VaccineRecord.objects.none()
 			else:
-				VaccineRecord.objects.none()
+				return VaccineRecord.objects.none()
 		else:
-			return Parent.objects.none()
+			return VaccineRecord.objects.none()
 
-class AppointmentSerializer(serializers.ModelSerializer):
-	class Meta:	
-		model 				= Appointment
-		fields  			= ('id', 'baby', 'administered_at', 'administered_on')
-		read_only_fields 	= ('id', 'administered_on')
-
-class AppointmentViewSet(viewsets.ModelViewSet):
-	"""docstring for AppointmentViewSet"""
-	serializer_class 	= AppointmentSerializer
-	permission_classes 	= (IsAuthenticated, )
-	queryset 			= Appointment.objects.all()
+class HealthCareField(serializers.RelatedField):
+	"""docstring for HealthCareField"""
+	def to_representation(self, obj):
+		return '%d - %s' % obj.id, obj.name
 
 class HealthCareSerializer(serializers.ModelSerializer):
 	"""docstring for HealthCareSerializer"""
@@ -181,6 +177,33 @@ class HealthCareViewSet(viewsets.ModelViewSet):
 			return HealthCare.objects.filter(pk = pk)
 		else:
 			return HealthCare.objects.all()
+
+class AppointmentSerializer(serializers.ModelSerializer):
+	administered_at = HealthCareSerializer(read_only=True)
+	class Meta:	
+		model 				= Appointment
+		fields  			= ('id', 'baby', 'administered_at', 'administered_on')
+		read_only_fields 	= ('id', 'administered_on', 'administered_at')
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+	"""docstring for AppointmentViewSet"""
+	serializer_class 	= AppointmentSerializer
+	permission_classes 	= (IsAuthenticated, )
+
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
+				baby = Baby.objects.get(pk = pk)
+				if baby is not None:
+					return Appointment.objects.filter(baby = baby)
+				else:
+					return VaccineRecord.objects.none()
+			else:
+				return VaccineRecord.objects.none()
+		else:
+			return VaccineRecord.objects.none()
 
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
 

@@ -172,7 +172,7 @@ class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
 	administered_on 	= models.DateTimeField(default = datetime.now)	
-	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")	
+	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
 	
 	def get_full_name(self):
 		return self.baby
