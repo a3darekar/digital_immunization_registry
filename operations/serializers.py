@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from choices import Vaccinations, vaccine_names, Vaccine_status
+from choices import Vaccinations, Vaccine_names, Vaccine_status
 
 from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare
 
@@ -96,7 +96,7 @@ class VaccineScheduleSerializer(serializers.ModelSerializer):
 	vaccine = serializers.SerializerMethodField()
 
 	def get_vaccine(self, obj):
-		vaccinations = dict(vaccine_names)
+		vaccinations = dict(Vaccine_names)
 		obj.vaccine = vaccinations[obj.vaccine]
 		return obj.vaccine
 	
@@ -123,14 +123,14 @@ class VaccineScheduleViewset(viewsets.ModelViewSet):
 class VaccineRecordSerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 				= VaccineRecord
-		fields  			= ('phc', 'vaccine', 'dose', 'status', 'amount')
-		read_only_fields 	= ('phc', 'vaccine', 'dose', 'status', 'amount')
+		fields  			= ('id', 'appointment', 'vaccine', 'dose', 'status', 'amount')
+		read_only_fields 	= ('id', 'appointment', 'vaccine', 'dose', 'status', 'amount')
 
 
 	vaccine = serializers.SerializerMethodField()
 
 	def get_vaccine(self, obj):
-		vaccinations = dict(vaccine_names)
+		vaccinations = dict(Vaccine_names)
 		obj.vaccine = vaccinations[obj.vaccine]
 		return obj.vaccine
 
@@ -146,7 +146,7 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 			if pk is not None:
 				appointment = Appointment.objects.get(pk = pk)
 				if appointment is not None:
-					return VaccineRecord.objects.filter(phc = appointment)
+					return VaccineRecord.objects.filter(appointment = appointment)
 				else:
 					return VaccineRecord.objects.none()
 			else:
@@ -154,10 +154,6 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 		else:
 			return VaccineRecord.objects.none()
 
-class HealthCareField(serializers.RelatedField):
-	"""docstring for HealthCareField"""
-	def to_representation(self, obj):
-		return '%d - %s' % obj.id, obj.name
 
 class HealthCareSerializer(serializers.ModelSerializer):
 	"""docstring for HealthCareSerializer"""
@@ -183,7 +179,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
 	class Meta:	
 		model 				= Appointment
 		fields  			= ('id', 'baby', 'administered_at', 'administered_on')
-		read_only_fields 	= ('id', 'administered_on', 'administered_at')
+		read_only_fields 	= ('id', 'administered_at', 'administered_on')
 
 class AppointmentViewSet(viewsets.ModelViewSet):
 	"""docstring for AppointmentViewSet"""
@@ -204,6 +200,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 				return VaccineRecord.objects.none()
 		else:
 			return VaccineRecord.objects.none()
+
+	def perform_create(self, serializer):
+		user = self.request.user
+		if user.is_authenticated:
+			clinitian = Clinitian.objects.get(user = user)
+			healthcare = clinitian.HealthCare
+			serializer.save(administered_at=healthcare)
+
 
 router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
 

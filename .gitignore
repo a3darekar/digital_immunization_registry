@@ -1,3 +1,4 @@
 **/*.pyc
 bonny/local_settings.py
+operations/twilio_credentials.py
 *.sqlite3

@@ -181,12 +181,13 @@ class Appointment(models.Model):
 		return self.tentative_date - datetime.today().date()
 
 
+Vaccine_status = dict(Vaccine_status)
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
 	appointment = models.ForeignKey(Appointment, related_name="Appointment")
 	vaccine 	= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
-	dose 		= models.CharField(max_length=90, default="Generic Doesage", help_text="name of vaccine dose with Company name")
-	status		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
+	dose 		= models.CharField(max_length=90, default="Generic Dosage", help_text="name of vaccine dose with Company name")
+	status		= models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
 	amount		= models.PositiveIntegerField('Dosage Amount', default=10, help_text="Dosage amount in ml")
 
 	class Meta:

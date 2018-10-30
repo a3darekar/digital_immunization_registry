@@ -60,6 +60,12 @@ Vaccine_status = (
 	('administered', 'Administered'),
 )
 
+vaccine_record_status = (
+	('cancelled', 'Cancelled'),
+	('scheduled', 'Scheduled'),
+	('administered', 'Administered'),
+)
+
 Appointmnet_status = (
 	('pending', 'Pending'),
 	('scheduled', 'Scheduled'),
@@ -79,7 +85,7 @@ BloodGroup = (
 )
 
 
-vaccine_names = (
+Vaccine_names = (
 	
 #	at birth
 	('bcg', 		'BCG'),
