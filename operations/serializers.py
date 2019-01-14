@@ -1,10 +1,12 @@
+from django.shortcuts import get_object_or_404
+
 from rest_framework import serializers, viewsets
 from rest_framework.routers import DefaultRouter
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from choices import Vaccinations, Vaccine_names, Vaccine_status
 
+from choices import Vaccinations, Vaccine_names, Vaccine_status
 from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare
 
 router = DefaultRouter()
@@ -111,7 +113,7 @@ class VaccineScheduleViewset(viewsets.ModelViewSet):
 		if user.is_authenticated:
 			pk = self.request.query_params.get('pk', None)
 			if pk is not None:
-				baby = Baby.objects.get(pk = pk)
+				baby = get_object_or_404(Baby, pk = pk)
 				return VaccineSchedule.objects.filter(baby = baby)
 			else:
 				VaccineSchedule.objects.none()
@@ -144,7 +146,7 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 		if user.is_authenticated:
 			pk = self.request.query_params.get('pk', None)
 			if pk is not None:
-				appointment = Appointment.objects.get(pk = pk)
+				appointment = get_object_or_404(Appointment, pk = pk)
 				if appointment is not None:
 					return VaccineRecord.objects.filter(appointment = appointment)
 				else:
@@ -191,7 +193,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 		if user.is_authenticated:
 			pk = self.request.query_params.get('pk', None)
 			if pk is not None:
-				baby = Baby.objects.get(pk = pk)
+				baby = get_object_or_404(Baby, pk = pk)
 				if baby is not None:
 					return Appointment.objects.filter(baby = baby)
 				else:
@@ -204,7 +206,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 	def perform_create(self, serializer):
 		user = self.request.user
 		if user.is_authenticated:
-			clinitian = Clinitian.objects.get(user = user)
+			clinitian = get_object_or_404(Clinitian, user = user)
 			healthcare = clinitian.HealthCare
 			serializer.save(administered_at=healthcare)
 
