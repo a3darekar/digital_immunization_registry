@@ -16,7 +16,6 @@ idna==2.7
 ipaddress==1.0.22
 oauthlib==2.1.0
 phonenumberslite==8.9.13
-pkg-resources==0.0.0
 pycparser==2.19
 pyfcm==1.4.5
 PyJWT==1.6.4
