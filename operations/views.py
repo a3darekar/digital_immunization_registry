@@ -11,7 +11,12 @@ from .twilio_credentials import *
 
 # Create your views here.
 def index(request):
-	client = rest.Client(account_sid, auth_token)
+	# client = Client(account_sid, auth_token)
+	# message = client.messages.create(
+	# 	to="+918788957859", 
+	# 	from_="+13373074483",
+	# 	body="Whos da gud boi?!!")
+
 	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
 
 
