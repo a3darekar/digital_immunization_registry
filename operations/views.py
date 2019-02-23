@@ -8,6 +8,10 @@ from .models import Parent, Baby, Clinitian, Appointment, VaccineRecord
 from django.views.decorators.csrf import csrf_exempt
 from .choices import Vaccine_names
 from .twilio_credentials import *
+from rest_framework.routers import DefaultRouter
+from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
+from .serializers import ClinitianViewset, HealthCareViewSet, ParentViewset, BabyViewset, VaccineRecordViewset, AppointmentViewSet, VaccineScheduleViewset
+
 
 # Create your views here.
 def index(request):
@@ -45,3 +49,25 @@ def schedule_vaccines(request):
 			return HttpResponse("No Appointment found")
 	else:
 		return HttpResponse("No post data")
+
+
+
+router = DefaultRouter()
+
+router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
+
+router.register(r'healthcare', HealthCareViewSet, base_name = 'healthcare-list')
+
+router.register(r'parent', ParentViewset, base_name = 'parent-rest')
+
+router.register(r'babies',BabyViewset, base_name = 'babies-search-list')
+
+router.register(r'vaccinations',VaccineRecordViewset, base_name = 'vaccine-record-list')
+
+router.register(r'appointments',AppointmentViewSet, base_name = 'appointment-list')
+
+router.register(r'schedule',VaccineScheduleViewset, base_name = 'vaccine-schedule-list')
+
+router.register(r'devices', FCMDeviceViewSet)
+
+router.register(r'authdevices', FCMDeviceAuthorizedViewSet)

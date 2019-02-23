@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from .serializers import router
+from .views import router
 from django.http import HttpResponse
 
 from .views import index, schedule_vaccines

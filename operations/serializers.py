@@ -1,15 +1,11 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers, viewsets
-from rest_framework.routers import DefaultRouter
-from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-
 from choices import Vaccinations, Vaccine_names, Vaccine_status
 from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare
 
-router = DefaultRouter()
 
 class ClinitianSerializer(serializers.ModelSerializer):
 	class Meta:	
@@ -210,21 +206,3 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 			healthcare = clinitian.HealthCare
 			serializer.save(administered_at=healthcare)
 
-
-router.register(r'phc_emp', ClinitianViewset, base_name = 'clinitian-rest-details')
-
-router.register(r'healthcare', HealthCareViewSet, base_name = 'healthcare-list')
-
-router.register(r'parent', ParentViewset, base_name = 'parent-rest')
-
-router.register(r'babies',BabyViewset, base_name = 'babies-search-list')
-
-router.register(r'vaccinations',VaccineRecordViewset, base_name = 'vaccine-record-list')
-
-router.register(r'appointments',AppointmentViewSet, base_name = 'appointment-list')
-
-router.register(r'schedule',VaccineScheduleViewset, base_name = 'vaccine-schedule-list')
-
-router.register(r'devices', FCMDeviceViewSet)
-
-router.register(r'authdevices', FCMDeviceAuthorizedViewSet)

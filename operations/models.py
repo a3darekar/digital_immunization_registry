@@ -122,7 +122,6 @@ class Baby(models.Model):
 		verbose_name_plural = ('babies')
 
 	def get_full_name(self):
-
 		full_name = '%s %s' % (self.first_name, self.last_name)
 		return full_name.strip()
 	
@@ -138,9 +137,7 @@ class Baby(models.Model):
 			super(Baby, self).save()	
 		else:
 			super(Baby, self).save()
-			parent = self.parent
-
-		# Add Vaccine with the tentative date
+			# Add Vaccine with the tentative date
 			Vaccines = dict(Vaccinations)
 			for week,vaccine in Vaccines.items():
 				my_dict = dict(vaccine)
