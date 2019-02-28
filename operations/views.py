@@ -4,7 +4,6 @@ from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 import json
-from .models import Parent, Baby, Clinitian, Appointment, VaccineRecord
 from django.views.decorators.csrf import csrf_exempt
 from .choices import Vaccine_names
 from .twilio_credentials import *
@@ -12,7 +11,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework import viewsets
 from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer
 from rest_framework.permissions import IsAuthenticated
-
+from .models import *
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from fcm_django.models import FCMDevice
 
