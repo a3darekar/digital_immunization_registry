@@ -169,7 +169,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 FCM_DJANGO_SETTINGS = {
-        "FCM_SERVER_KEY": "[your api key]",
+        "FCM_SERVER_KEY": "",
          # true if you want to have only one active device per registered user at a time
          # default: False
         "ONE_DEVICE_PER_USER": False,
@@ -178,3 +178,5 @@ FCM_DJANGO_SETTINGS = {
          # default: False
         "DELETE_INACTIVE_DEVICES": True,
 }
+
+from .local_settings import *

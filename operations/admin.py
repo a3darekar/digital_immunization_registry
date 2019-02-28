@@ -73,7 +73,7 @@ class VaccineRecordAdmin(admin.ModelAdmin):
 	def Appointment(self, obj):
 		return obj.appointment.pk
 	
-	list_display = ('Appointment', 'vaccine', 'dose', 'status', 'amount')
+	list_display = ('Appointment', 'vaccine', 'status')
 
 
 admin.site.register(Parent, ParentAdmin)

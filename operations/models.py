@@ -111,7 +111,7 @@ class Baby(models.Model):
 	gender				= models.CharField('Gender', max_length = 10, choices = Gender)
 	birth_date			= models.DateTimeField(('Birth Date'),default=datetime.now)
 	week 				= models.PositiveIntegerField(default=0)
-	special_notes		= models.CharField(('Special Notes'), max_length = 400, help_text = 'Any Medical conditions such as allergies are to be mentioned here')
+	special_notes		= models.CharField(('Special Notes'), max_length = 400, help_text = 'Any Medical conditions such as allergies are to be mentioned here', default="NA")
 	text_notifications 	= models.BooleanField(default = True)
 
 	def __str__(self):
@@ -183,9 +183,7 @@ class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
 	appointment = models.ForeignKey(Appointment, related_name="Appointment")
 	vaccine 	= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
-	dose 		= models.CharField(max_length=90, default="Generic Dosage", help_text="name of vaccine dose with Company name")
 	status		= models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
-	amount		= models.PositiveIntegerField('Dosage Amount', default=10, help_text="Dosage amount in ml")
 
 	class Meta:
 		unique_together 	= (('appointment','vaccine'))
