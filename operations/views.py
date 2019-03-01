@@ -17,18 +17,18 @@ from fcm_django.models import FCMDevice
 
 # Create your views here.
 def index(request):
-	client = Client(account_sid, auth_token)
-	message = client.messages.create(
-		to="+918788957859", 
-		from_="+13373074483",
-		body="Kuth Rahilis?!!")
+	# client = Client(account_sid, auth_token)
+	# message = client.messages.create(
+	# 	to="+918788957859", 
+	# 	from_="+13373074483",
+	# 	body="Kutha Rahilis?!!")
 
-	print repr(message)
-	devices = FCMDevice.objects.all()
-	print devices
-	for device in devices:
-		body = "Eee" + " Sejal :- " + "Kuth Rahilis?"
-		device.send_message(title="Testing Messges", body=body)
+	# print repr(message)
+	# devices = FCMDevice.objects.all()
+	# print devices
+	# for device in devices:
+	# 	body = "Eee" + " Sejal " + "Kutha Rahilis?"
+	# 	device.send_message(title="Testing Messges", body=body)
 
 	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
 
@@ -133,19 +133,21 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 	"""VaccineRecordViewset for REST Endpoint"""
 	serializer_class 	= VaccineRecordSerializer
 	permission_classes 	= (IsAuthenticated,)
-	
+	# http_method_names 	= ['get', 'post', 'patch', 'head']
+
+	# def update(self, request):
+	# 	# do things...
+	# 	return Response(status=status.HTTP_200_OK)
+		
 	def get_queryset(self):
 		user = self.request.user
 		if user.is_authenticated:
 			pk = self.request.query_params.get('pk', None)
 			if pk is not None:
 				appointment = get_object_or_404(Appointment, pk = pk)
-				if appointment is not None:
-					return VaccineRecord.objects.filter(appointment = appointment)
-				else:
-					return VaccineRecord.objects.none()
+				return VaccineRecord.objects.filter(appointment = appointment)
 			else:
-				return VaccineRecord.objects.none()
+				return VaccineRecord.objects.all()
 		else:
 			return VaccineRecord.objects.none()
 

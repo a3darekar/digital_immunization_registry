@@ -46,7 +46,7 @@ class VaccineScheduleSerializer(serializers.ModelSerializer):
 		vaccinations = dict(Vaccine_names)
 		obj.vaccine = vaccinations[obj.vaccine]
 		return obj.vaccine
-	
+
 
 
 class VaccineRecordSerializer(serializers.ModelSerializer):
@@ -56,12 +56,12 @@ class VaccineRecordSerializer(serializers.ModelSerializer):
 		read_only_fields 	= ('id', 'appointment', 'vaccine', 'status')
 
 
-	vaccine = serializers.SerializerMethodField()
+	# vaccine = serializers.SerializerMethodField()
 
-	def get_vaccine(self, obj):
-		vaccinations = dict(Vaccine_names)
-		obj.vaccine = vaccinations[obj.vaccine]
-		return obj.vaccine
+	# def get_vaccine(self, obj):
+	# 	vaccinations = dict(Vaccine_names)
+	# 	obj.vaccine = vaccinations[obj.vaccine]
+	# 	return obj.vaccine
 
 class HealthCareSerializer(serializers.ModelSerializer):
 	"""docstring for HealthCareSerializer"""
