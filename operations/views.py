@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 import json
@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .choices import Vaccine_names
 from .twilio_credentials import *
 from rest_framework.routers import DefaultRouter
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework import viewsets
 from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -17,41 +19,19 @@ from fcm_django.models import FCMDevice
 
 # Create your views here.
 def index(request):
-	# client = Client(account_sid, auth_token)
-	# message = client.messages.create(
-	# 	to="+918788957859", 
-	# 	from_="+13373074483",
-	# 	body="Kutha Rahilis?!!")
-
-	# print repr(message)
-	# devices = FCMDevice.objects.all()
-	# print devices
-	# for device in devices:
-	# 	body = "Eee" + " Sejal " + "Kutha Rahilis?"
-	# 	device.send_message(title="Testing Messges", body=body)
-
 	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
-
 
 @csrf_exempt
 def schedule_vaccines(request):
-	# message = client.messages.create(
-	# 	to="+918788957859", 
-	# 	from_="+13373074483",
-	# 	body="Hello from Python! Have a nice day!")
-
-	# print(message.sid)
 	if request.method=='POST':
 		appointment = request.POST['appointment']
 		appointment = Appointment.objects.get(pk=appointment)
 		if appointment:
 			vaccines = str(request.POST['vaccines'])
 			vaccines = vaccines.split(',')
-			print vaccines
 			vaccine_names	= dict(Vaccine_names)
 			for vaccine in vaccines:
 				vaccinerecord = VaccineRecord(appointment = appointment, vaccine=vaccine)
-				print vaccine_names[vaccine]
 				vaccinerecord.save()
 			return HttpResponse("{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
 		else:
@@ -104,7 +84,6 @@ class BabyViewset(viewsets.ModelViewSet):
 			queryset = Baby.objects.filter(parent = parent)
 		elif aadhaar is not None:
 			parent = Parent.objects.filter(unique_id = aadhaar)
-			print parent
 			queryset = Baby.objects.filter(parent = parent)
 		return queryset
 
@@ -133,11 +112,6 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 	"""VaccineRecordViewset for REST Endpoint"""
 	serializer_class 	= VaccineRecordSerializer
 	permission_classes 	= (IsAuthenticated,)
-	# http_method_names 	= ['get', 'post', 'patch', 'head']
-
-	# def update(self, request):
-	# 	# do things...
-	# 	return Response(status=status.HTTP_200_OK)
 		
 	def get_queryset(self):
 		user = self.request.user
@@ -150,6 +124,17 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 				return VaccineRecord.objects.all()
 		else:
 			return VaccineRecord.objects.none()
+
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		instance.status = request.data.get("status")
+		appointment = request.data.get("appointment")
+		instance.appointment = get_object_or_404(Appointment, pk = appointment)
+		print instance.appointment.id
+		instance.save()
+		serializer = VaccineRecordSerializer(instance=instance)
+		print serializer.data
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 

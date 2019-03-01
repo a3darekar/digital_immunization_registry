@@ -56,6 +56,7 @@ class VaccineRecordSerializer(serializers.ModelSerializer):
 		read_only_fields 	= ('id', 'appointment', 'vaccine', 'status')
 
 
+
 	# vaccine = serializers.SerializerMethodField()
 
 	# def get_vaccine(self, obj):
