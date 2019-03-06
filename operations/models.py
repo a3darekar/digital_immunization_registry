@@ -37,6 +37,7 @@ class Parent(models.Model):
 	class Meta:
 		verbose_name 		= ('parent')
 		verbose_name_plural = ('parents')
+		unique_together = (('user','id'))
 
 	def __str__(self):
 		return self.get_full_name()

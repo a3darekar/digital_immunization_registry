@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import pytz
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 import json
 from django.views.decorators.csrf import csrf_exempt
-from .choices import Vaccine_names
+from .choices import Vaccine_names, BloodGroup, Vaccine_status
 from .twilio_credentials import *
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
@@ -16,6 +17,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from fcm_django.models import FCMDevice
+from django.views.generic import View
+from django.db.models import Sum
 
 # Create your views here.
 def index(request):
@@ -39,6 +42,63 @@ def schedule_vaccines(request):
 	else:
 		return HttpResponse("No post data")
 
+
+from .utils import render_to_pdf
+from django.core.mail import EmailMessage	
+from django.template.loader import get_template
+from django.db.models import Count
+
+
+class GeneratePdf(View):
+	def get(self, request, *args, **kwargs):
+		request_param =  request.GET.get("tag")
+		
+		if request_param:
+			blood_group 		= dict(BloodGroup)
+			vaccine_names		= dict(Vaccine_names)
+			vaccine_status 		= dict(Vaccine_status)
+			baby 				= Baby.objects.filter(tag=request_param).first()
+			baby.blood_group 	= blood_group[baby.blood_group]
+			schedule 			= VaccineSchedule.objects.filter(baby=baby)
+			for vaccine_schedule in schedule:
+				vaccine_schedule.vaccine	= vaccine_names[vaccine_schedule.vaccine]
+				vaccine_schedule.status		= vaccine_status[vaccine_schedule.status]
+			date = 	pytz.timezone("Asia/Kolkata").localize(datetime.today())
+			context = {
+				"baby": baby,
+				"schedule": schedule,
+				"today": date,
+			}
+			pdf = render_to_pdf('Scheule_report.html', context)
+			filename = "Report_%s.pdf" %(context['today'])
+
+
+		if request_param:
+			return render(request, 'Scheule_report.html', context)
+			# response = HttpResponse(html)
+		 # 	return response
+
+			# response = HttpResponse(pdf, content_type='application/pdf')
+			# content = 'inline; filename="%s"' %(filename)
+			# download = request.GET.get("download")
+			# if download:
+			# 	content = "attachment; filename='%s'" %(filename)
+			# response['Content-Disposition'] = content
+			# return response
+		return HttpResponse("No such data found", status=201)
+
+
+def notify(parent):
+	email = EmailMessage('Vaccination Schedule', 'vaccination schedule of ya baby', to=[baby.parent.email], headers = {'Reply-To': 'admin@bonny.com'})
+	email.attach('filename', pdf.read(), 'application/pdf')
+	email.content_subtype = "html"
+	email_sent = email.send()
+	client 	= Client(account_sid, auth_token)
+	message = client.messages.create(
+		to= parent.contact, 
+		from_="+13373074483",
+		body="Check your MMCOE email!!")
+	print message
 
 #VIEWSETS
 
@@ -130,10 +190,8 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 		instance.status = request.data.get("status")
 		appointment = request.data.get("appointment")
 		instance.appointment = get_object_or_404(Appointment, pk = appointment)
-		print instance.appointment.id
 		instance.save()
 		serializer = VaccineRecordSerializer(instance=instance)
-		print serializer.data
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -142,8 +200,15 @@ class ParentViewset(viewsets.ModelViewSet):
 	"""ParentViewset for REST Endpoint"""
 	serializer_class 	= ParentSerializer
 	permission_classes 	= (IsAuthenticated,)
-	queryset 			= Parent.objects.all()
 
+	def get_queryset(self):
+		user 	= self.request.user
+		pk = self.request.query_params.get('pk', None)
+		if pk is not None:
+			parent 	= Parent.objects.filter(user=pk)
+			if user.pk == parent[0].user.pk:
+				return parent
+		return Parent.objects.all()
 
 class AppointmentViewSet(viewsets.ModelViewSet):
 	"""docstring for AppointmentViewSet"""
