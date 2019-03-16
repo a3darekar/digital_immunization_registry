@@ -180,6 +180,7 @@ class Appointment(models.Model):
 
 
 Vaccine_status = dict(Vaccine_status)
+
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
 	appointment = models.ForeignKey(Appointment, related_name="Appointment")

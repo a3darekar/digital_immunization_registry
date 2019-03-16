@@ -27,15 +27,19 @@ def index(request):
 @csrf_exempt
 def schedule_vaccines(request):
 	if request.method=='POST':
-		appointment = request.POST['appointment']
-		appointment = Appointment.objects.get(pk=appointment)
+		appointment 	= request.POST['appointment']
+		appointment 	= Appointment.objects.get(pk=appointment)
 		if appointment:
-			vaccines = str(request.POST['vaccines'])
-			vaccines = vaccines.split(',')
-			vaccine_names	= dict(Vaccine_names)
+			vaccines 				= str(request.POST['vaccines'])
+			vaccines 				= vaccines.split(',')
+			vaccine_names			= dict(Vaccine_names)
 			for vaccine in vaccines:
-				vaccinerecord = VaccineRecord(appointment = appointment, vaccine=vaccine)
-				vaccinerecord.save()
+				vaccine_record 			= VaccineRecord(appointment = appointment, vaccine=vaccine)
+				vaccine_record.save()
+				baby 					= vaccine_record.appointment.baby
+				vaccine_schedule 		= VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine_record.vaccine)
+				vaccine_schedule.status = 'scheduled'
+				vaccine_schedule.save()
 			return HttpResponse("{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
 		else:
 			return HttpResponse("No Appointment found")
@@ -190,7 +194,16 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 		instance.status = request.data.get("status")
 		appointment = request.data.get("appointment")
 		instance.appointment = get_object_or_404(Appointment, pk = appointment)
+		baby = instance.appointment.baby
+		print baby
 		instance.save()
+		if instance.status == 'administered':
+			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'administered')
+		elif instance.status == 'scheduled':
+			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'scheduled')
+		else:
+			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'pending')
+		print schedule_record
 		serializer = VaccineRecordSerializer(instance=instance)
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
