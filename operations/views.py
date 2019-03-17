@@ -1,57 +1,28 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import pytz
+import json
 from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
-import json
-from django.views.decorators.csrf import csrf_exempt
-from .choices import Vaccine_names, BloodGroup, Vaccine_status
-from .twilio_credentials import *
-from rest_framework.routers import DefaultRouter
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
-from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer
-from rest_framework.permissions import IsAuthenticated
-from .models import *
-from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
-from fcm_django.models import FCMDevice
 from django.views.generic import View
 from django.db.models import Sum
-
-# Create your views here.
-def index(request):
-	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
-
-@csrf_exempt
-def schedule_vaccines(request):
-	if request.method=='POST':
-		appointment 	= request.POST['appointment']
-		appointment 	= Appointment.objects.get(pk=appointment)
-		if appointment:
-			vaccines 				= str(request.POST['vaccines'])
-			vaccines 				= vaccines.split(',')
-			vaccine_names			= dict(Vaccine_names)
-			for vaccine in vaccines:
-				vaccine_record 			= VaccineRecord(appointment = appointment, vaccine=vaccine)
-				vaccine_record.save()
-				baby 					= vaccine_record.appointment.baby
-				vaccine_schedule 		= VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine_record.vaccine)
-				vaccine_schedule.status = 'scheduled'
-				vaccine_schedule.save()
-			return HttpResponse("{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
-		else:
-			return HttpResponse("No Appointment found")
-	else:
-		return HttpResponse("No post data")
-
-
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.routers import DefaultRouter
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import *
+from .twilio_credentials import *
+from .choices import Vaccine_names, BloodGroup, Vaccine_status
+from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer
+from fcm_django.models import FCMDevice
+from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
+# PDF generation and Email backend imports
+from django.db.models import Count
 from .utils import render_to_pdf
 from django.core.mail import EmailMessage	
 from django.template.loader import get_template
-from django.db.models import Count
-
 
 class GeneratePdf(View):
 	def get(self, request, *args, **kwargs):
@@ -78,17 +49,17 @@ class GeneratePdf(View):
 
 
 		if request_param:
-			return render(request, 'Scheule_report.html', context)
+			# return render(request, 'Scheule_report.html', context)
 			# response = HttpResponse(html)
-		 # 	return response
+		 	# return response
 
-			# response = HttpResponse(pdf, content_type='application/pdf')
-			# content = 'inline; filename="%s"' %(filename)
-			# download = request.GET.get("download")
-			# if download:
-			# 	content = "attachment; filename='%s'" %(filename)
-			# response['Content-Disposition'] = content
-			# return response
+			response = HttpResponse(pdf, content_type='application/pdf')
+			content = 'inline; filename="%s"' %(filename)
+			download = request.GET.get("download")
+			if download:
+				content = "attachment; filename='%s'" %(filename)
+			response['Content-Disposition'] = content
+			return response
 		return HttpResponse("No such data found", status=201)
 
 
@@ -103,6 +74,32 @@ def notify(parent):
 		from_="+13373074483",
 		body="Check your MMCOE email!!")
 	print message
+
+
+# Create your views here.
+def index(request):
+	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
+
+@csrf_exempt
+def schedule_vaccines(request):
+	if request.method=='POST':
+		appointment 	= request.POST['appointment']
+		appointment 	= Appointment.objects.get(pk=appointment)
+		if appointment:
+			vaccines 				= str(request.POST['vaccines'])
+			vaccines 				= vaccines.split(',')
+			vaccine_names			= dict(Vaccine_names)
+			for vaccine in vaccines:
+				vaccine_record 			= VaccineRecord(appointment = appointment, vaccine=vaccine)
+				vaccine_record.save()
+				baby 				= vaccine_record.appointment.baby
+				schedule_record		= VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine).update(status = 'scheduled')
+			return HttpResponse("{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
+		else:
+			return HttpResponse("No Appointment found")
+	else:
+		return HttpResponse("No post data")
+
 
 #VIEWSETS
 
@@ -151,6 +148,17 @@ class BabyViewset(viewsets.ModelViewSet):
 			queryset = Baby.objects.filter(parent = parent)
 		return queryset
 
+def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		instance.tag = request.data.get("tag")
+		instance.weight = request.data.get("weight")
+		instance.week = request.data.get("week")
+		instance.special_notes = request.data.get("special_notes")
+		instance.text_notifications = request.data.get("text_notifications")
+		instance.save()
+		serializer = VaccineRecordSerializer(instance=instance)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 class VaccineScheduleViewset(viewsets.ModelViewSet):
@@ -195,7 +203,6 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 		appointment = request.data.get("appointment")
 		instance.appointment = get_object_or_404(Appointment, pk = appointment)
 		baby = instance.appointment.baby
-		print baby
 		instance.save()
 		if instance.status == 'administered':
 			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'administered')
@@ -203,7 +210,6 @@ class VaccineRecordViewset(viewsets.ModelViewSet):
 			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'scheduled')
 		else:
 			schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=instance.vaccine).update(status = 'pending')
-		print schedule_record
 		serializer = VaccineRecordSerializer(instance=instance)
 		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
