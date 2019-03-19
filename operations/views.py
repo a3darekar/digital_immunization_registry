@@ -150,7 +150,12 @@ class BabyViewset(viewsets.ModelViewSet):
 
 def update(self, request, *args, **kwargs):
 		instance = self.get_object()
+		instance.first_name = request.data.get("first_name")
+		instance.last_name = request.data.get("last_name")
 		instance.tag = request.data.get("tag")
+		instance.place_of_birth = request.data.get("place_of_birth")
+		instance.blood_group = request.data.get("blood_group")
+		instance.gender = request.data.get("gender")
 		instance.weight = request.data.get("weight")
 		instance.week = request.data.get("week")
 		instance.special_notes = request.data.get("special_notes")
