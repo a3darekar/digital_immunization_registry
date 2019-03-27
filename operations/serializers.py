@@ -4,7 +4,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from choices import Vaccinations, Vaccine_names, Vaccine_status
-from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare
+from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare, Notification
 
 
 class ClinitianSerializer(serializers.ModelSerializer):
@@ -77,3 +77,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
 		model 				= Appointment
 		fields  			= ('id', 'baby', 'administered_at', 'administered_on')
 		read_only_fields 	= ('id', 'administered_at', 'administered_on')
+
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'receiver', 'title', 'body', 'status')
+    

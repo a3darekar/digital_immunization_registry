@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .twilio_credentials import *
 from .choices import Vaccine_names, BloodGroup, Vaccine_status
-from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer
+from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer, NotificationSerializer
 from fcm_django.models import FCMDevice
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 # PDF generation and Email backend imports
@@ -277,6 +277,21 @@ class ClinitianViewset(viewsets.ModelViewSet):
 
 
 
+class NotificationViewset(viewsets.ModelViewSet):
+	"""NotificationViewset for REST Endpoint"""
+	serializer_class 	= NotificationSerializer
+	permission_classes 	= (IsAuthenticated,)
+
+	def get_queryset(self):
+		user 	= self.request.user
+		user = self.request.user
+		if user.is_authenticated:
+			parent 	= Parent.objects.filter(user=user)
+			return Notification.objects.filter(receiver=parent)
+		else:
+			return Notification.objects.none()
+
+
 
 router = DefaultRouter()
 
@@ -293,6 +308,8 @@ router.register(r'vaccinations',VaccineRecordViewset, base_name = 'vaccine-recor
 router.register(r'appointments',AppointmentViewSet, base_name = 'appointment-list')
 
 router.register(r'schedule',VaccineScheduleViewset, base_name = 'vaccine-schedule-list')
+
+router.register(r'notifications',NotificationViewset, base_name = 'notification-list')
 
 router.register(r'devices', FCMDeviceViewSet)
 

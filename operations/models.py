@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from .choices import *
-
+from fcm_django.models import FCMDevice
 
 class HealthCare(models.Model):
 	"""docstring for HealthCare"""
@@ -58,6 +58,11 @@ class Parent(models.Model):
 			user.email = self.email 
 			user.save()
 		super(Parent, self).save()
+
+	def notify(self, title, body):
+		device = FCMDevice.objects.all()
+		print device
+		device.send_message(title, body)
 
 
 class Clinitian(models.Model):
@@ -189,3 +194,22 @@ class VaccineRecord(models.Model):
 
 	class Meta:
 		unique_together 	= (('appointment','vaccine'))
+
+
+class Notification(models.Model):
+    """
+    Description: FCM notification Model
+    """
+    receiver = models.ForeignKey(Parent, related_name='Parent')
+    title 	 = models.CharField(max_length=100)
+    body 	 = models.CharField(max_length=300)
+    status   = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+
+    def save(self, *args, **kwargs):
+    	parent = self.receiver
+    	parent.notify(self.title, self.body)
+    	super(Notification, self).save()
