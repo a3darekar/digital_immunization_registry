@@ -189,7 +189,7 @@ Vaccine_status = dict(Vaccine_status)
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
 	appointment = models.ForeignKey(Appointment, related_name="Appointment")
-	vaccine 	= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
+	vaccine 	= models.CharField(('Vaccine'), max_length=20, choices=Vaccinations)
 	status		= models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
 
 	class Meta:
@@ -203,9 +203,9 @@ class Notification(models.Model):
 	receiver 	= models.ForeignKey(Parent, related_name='Parent')
 	title 	 	= models.CharField(max_length=100)
 	body 	 	= models.CharField(max_length=300)
-	status   	= models.BooleanField(default=False)
-	notif_type 	= models.CharField(max_length=40, choices=NotificationType)
-	notif_time 	= models.DateTimeField(default=datetime.now)
+	status   	= models.BooleanField(('Status'), default=False)
+	notif_type 	= models.CharField(('Notification Type'), max_length=40, choices=NotificationType)
+	notif_time 	= models.DateTimeField(('Notification Time'), default=datetime.now)
 
 	class Meta:
 		verbose_name = 'Notification'

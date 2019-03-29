@@ -78,7 +78,7 @@ class VaccineRecordAdmin(admin.ModelAdmin):
 class NotificationAdmin(admin.ModelAdmin):
 	"""docstring for VaccineRecordAdmin"""
 	
-	list_display = ('receiver', 'status', 'title')
+	list_display = ('receiver', 'status','notif_type', 'notif_time', 'title')
 
 
 admin.site.register(Parent, ParentAdmin)
