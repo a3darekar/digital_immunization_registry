@@ -197,25 +197,22 @@ class VaccineRecord(models.Model):
 
 
 class Notification(models.Model):
-    """
-    Description: FCM notification Model
-    """
-    receiver = models.ForeignKey(Parent, related_name='Parent')
-    title 	 = models.CharField(max_length=100)
-    body 	 = models.CharField(max_length=300)
-    status   = models.BooleanField(default=False)
+	"""
+	Description: FCM notification Model
+	"""
+	receiver = models.ForeignKey(Parent, related_name='Parent')
+	title 	 = models.CharField(max_length=100)
+	body 	 = models.CharField(max_length=300)
+	status   = models.BooleanField(default=False)
 
-    class Meta:
-        verbose_name = 'Notification'
-        verbose_name_plural = 'Notifications'
+	class Meta:
+		verbose_name = 'Notification'
+		verbose_name_plural = 'Notifications'
 
-    def __str__(self):
-    	return self.receiver + ":- " + self.title
-
-    def save(self, *args, **kwargs):
-    	if self.pk:
-    		super(Notification, self).save()
-    	else:
-    		parent = self.receiver
-    		parent.notify(self.title, self.body)
-    		super(Notification, self).save()
+	def save(self, *args, **kwargs):
+		if self.pk:
+			super(Notification, self).save()
+		else:
+			parent = self.receiver
+			parent.notify(self.title, self.body)
+			super(Notification, self).save()
