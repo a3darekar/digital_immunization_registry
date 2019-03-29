@@ -75,8 +75,14 @@ class VaccineRecordAdmin(admin.ModelAdmin):
 	
 	list_display = ('Appointment', 'vaccine', 'status')
 
+class NotificationAdmin(admin.ModelAdmin):
+	"""docstring for VaccineRecordAdmin"""
+	
+	list_display = ('receiver', 'status', 'title')
+
 
 admin.site.register(Parent, ParentAdmin)
+admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Baby, BabyAdmin)
 admin.site.register(Clinitian, ClinitianAdmin)
 admin.site.register(VaccineSchedule, VaccineScheduleAdmin)

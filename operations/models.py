@@ -209,7 +209,13 @@ class Notification(models.Model):
         verbose_name = 'Notification'
         verbose_name_plural = 'Notifications'
 
+    def __str__(self):
+    	return self.receiver + ":- " + self.title
+
     def save(self, *args, **kwargs):
-    	parent = self.receiver
-    	parent.notify(self.title, self.body)
-    	super(Notification, self).save()
+    	if self.pk:
+    		super(Notification, self).save()
+    	else:
+    		parent = self.receiver
+    		parent.notify(self.title, self.body)
+    		super(Notification, self).save()

@@ -292,6 +292,15 @@ class NotificationViewset(viewsets.ModelViewSet):
 			return Notification.objects.none()
 
 
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		print(type(request.data.get("status")))
+		if request.data.get("status") == 'true':
+			instance.status = True
+			instance.save()
+		serializer = NotificationSerializer(instance=instance)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 router = DefaultRouter()
 
