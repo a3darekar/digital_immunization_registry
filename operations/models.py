@@ -204,6 +204,7 @@ class Notification(models.Model):
 	title 	 = models.CharField(max_length=100)
 	body 	 = models.CharField(max_length=300)
 	status   = models.BooleanField(default=False)
+	notif_time=models.DateTimeField(default=datetime.now)
 
 	class Meta:
 		verbose_name = 'Notification'
