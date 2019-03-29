@@ -119,3 +119,8 @@ Vaccine_names = (
 	('mmr1',		'MMR-1'),
 )
 
+NotificationType = (
+	('info', 'info'),
+	('success', 'success'),
+	('error', 'error'),
+)

@@ -200,11 +200,12 @@ class Notification(models.Model):
 	"""
 	Description: FCM notification Model
 	"""
-	receiver = models.ForeignKey(Parent, related_name='Parent')
-	title 	 = models.CharField(max_length=100)
-	body 	 = models.CharField(max_length=300)
-	status   = models.BooleanField(default=False)
-	notif_time=models.DateTimeField(default=datetime.now)
+	receiver 	= models.ForeignKey(Parent, related_name='Parent')
+	title 	 	= models.CharField(max_length=100)
+	body 	 	= models.CharField(max_length=300)
+	status   	= models.BooleanField(default=False)
+	notif_type 	= models.CharField(max_length=40, choices=NotificationType)
+	notif_time 	= models.DateTimeField(default=datetime.now)
 
 	class Meta:
 		verbose_name = 'Notification'
