@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
+from django.contrib.auth.models import User
 from choices import Vaccinations, Vaccine_names, Vaccine_status
 from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare, Notification
 
@@ -55,7 +56,10 @@ class VaccineRecordSerializer(serializers.ModelSerializer):
 		fields  			= ('id', 'appointment', 'vaccine', 'status')
 		read_only_fields 	= ('id', 'appointment', 'vaccine', 'status')
 
-
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'username')
 
 	# vaccine = serializers.SerializerMethodField()
 

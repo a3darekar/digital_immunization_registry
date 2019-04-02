@@ -15,9 +15,10 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .twilio_credentials import *
 from .choices import Vaccine_names, BloodGroup, Vaccine_status
-from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer, NotificationSerializer
+from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, VaccineRecordSerializer, ClinitianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
 from fcm_django.models import FCMDevice
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
+from rest_framework import generics
 # PDF generation and Email backend imports
 from django.db.models import Count
 from .utils import render_to_pdf
@@ -103,6 +104,9 @@ def schedule_vaccines(request):
 
 #VIEWSETS
 
+class UserListView(generics.ListCreateAPIView):
+	queryset = User.objects.all()
+	serializer_class = UserSerializer
 
 class HealthCareViewSet(viewsets.ModelViewSet):
 	"""docstring for HealthCareViewSet"""
