@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from django.views.generic import View
 from django.db.models import Sum
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -80,7 +80,7 @@ def notify(parent):
 def index(request):
 	return HttpResponse("<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site Administrator.")
 
-@csrf_exempt
+@api_view(['POST'])
 def schedule_vaccines(request):
 	if request.method=='POST':
 		appointment 	= request.POST['appointment']

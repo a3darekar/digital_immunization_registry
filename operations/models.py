@@ -177,6 +177,9 @@ class Appointment(models.Model):
 	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
 	
+	def __str__(self):
+		return self.baby.first_name + str(self.pk)
+
 	def get_full_name(self):
 		return self.baby
 

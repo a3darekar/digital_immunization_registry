@@ -65,7 +65,7 @@ class AppointmentAdmin(admin.ModelAdmin):
 	def Baby(self, obj):
 		return obj.baby.get_full_name()
 
-	list_display = ('Baby', 'administered_at', 'administered_on')
+	list_display = ('id', 'Baby', 'administered_at', 'administered_on')
 
 class VaccineRecordAdmin(admin.ModelAdmin):
 	"""docstring for VaccineRecordAdmin"""
