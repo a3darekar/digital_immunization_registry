@@ -59,10 +59,20 @@ class Parent(models.Model):
 			user.save()
 		super(Parent, self).save()
 
-	def notify(self, title, body):
+	def notify(self, title, body, baby_id):
+		from .twilio_credentials import  client
 		device = FCMDevice.objects.all()
-		print device
-		device.send_message(title, body)
+		baby = Baby.objects.get(pk=baby_id)
+		text_notifications = baby.text_notifications
+		if device:
+			device.send_message(title, body)
+		if text_notifications:
+			message = client.messages.create(
+				to="+918788957859",
+				from_="+13373074483",
+				body="%s \n %s " % (title, body)
+			)
+			print(message.sid)
 
 
 class Clinitian(models.Model):
@@ -152,13 +162,30 @@ class Baby(models.Model):
 					v.save()
 		return self
 
+	def dosage_complete(self, *args, **kwargs):
+		vs = VaccineSchedule.objects.filter(baby=self, week=self.week).exclude(status='administered').first()
+		print("inside update function")
+		if vs is None:
+			if self.week == 24:
+				self.week = 36
+			if self.week == 14:
+				self.week = 24
+			if self.week == 10:
+				self.week = 14
+			if self.week == 6:
+				self.week = 10
+			if self.week == 0:
+				self.week = 6
+			super(Baby, self).save()
+		return self
+
 class VaccineSchedule(models.Model):
 	"""Schedule of Vaccines in to br Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_schedules")
 	vaccine 			= models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	week				= models.PositiveIntegerField(default = 0)
 	tentative_date 		= models.DateTimeField(default = datetime.now)	
-	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_status)
+	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_Status)
 	
 
 	class Meta:
@@ -187,7 +214,7 @@ class Appointment(models.Model):
 		return self.tentative_date - datetime.today().date()
 
 
-Vaccine_status = dict(Vaccine_status)
+Vaccine_status = dict(Vaccine_Status)
 
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
@@ -198,6 +225,16 @@ class VaccineRecord(models.Model):
 	class Meta:
 		unique_together 	= (('appointment','vaccine'))
 
+	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+		super(VaccineRecord, self).save()
+		if self.status == 'administered':
+			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='administered')
+		elif self.status == 'scheduled':
+			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='scheduled')
+		else:
+			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='pending')
+			self.appointment.baby.dosage_complete()
+		return self
 
 class Notification(models.Model):
 	"""

@@ -54,7 +54,7 @@ Gender = (
 	('female', 'Female'),
 )
 
-Vaccine_status = (
+Vaccine_Status = (
 	('pending', 'Pending'),
 	('scheduled', 'Scheduled'),
 	('administered', 'Administered'),

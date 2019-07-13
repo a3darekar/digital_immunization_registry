@@ -47,7 +47,7 @@ class BabyAdmin(admin.ModelAdmin):
 	def name(self, obj):
 		return obj.get_full_name()
 
-	list_display = ('name', 'gender', 'birth_date')
+	list_display = ('name', 'gender', 'birth_date', 'week')
 
 class VaccineScheduleAdmin(admin.ModelAdmin):
 	def Baby(self, obj):
