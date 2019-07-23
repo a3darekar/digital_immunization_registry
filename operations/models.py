@@ -59,11 +59,9 @@ class Parent(models.Model):
 			user.save()
 		super(Parent, self).save()
 
-	def notify(self, title, body, baby_id):
+	def notify(self, title, body, text_notifications=False):
 		from .twilio_credentials import  client
 		device = FCMDevice.objects.all()
-		baby = Baby.objects.get(pk=baby_id)
-		text_notifications = baby.text_notifications
 		if device:
 			device.send_message(title, body)
 		if text_notifications:
@@ -241,6 +239,7 @@ class Notification(models.Model):
 	Description: FCM notification Model
 	"""
 	receiver 	= models.ForeignKey(Parent, related_name='Parent')
+	baby 		= models.ForeignKey(Baby, related_name='Baby')
 	title 	 	= models.CharField(max_length=100)
 	body 	 	= models.CharField(max_length=300)
 	status   	= models.BooleanField(('Status'), default=False)
@@ -256,5 +255,5 @@ class Notification(models.Model):
 			super(Notification, self).save()
 		else:
 			parent = self.receiver
-			parent.notify(self.title, self.body)
+			parent.notify(self.title, self.body, self.baby.text_notifications)
 			super(Notification, self).save()
