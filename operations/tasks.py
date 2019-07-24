@@ -49,15 +49,13 @@ def update_schedule():
 							overdue.append(obj.vaccine)
 							flag2 = True
 		if flag2 is True:
-			print(flag2)
 			overdue_string = ', '.join(str(names[e]) for e in overdue)
 			body = "%s is past the due date for vaccination on %s for following vaccines of Week %s for following vaccines: %s." % (
 				baby.get_full_name(), obj.tentative_date.date(), baby.week, overdue_string)
-			Notification(title="Upcoming Vaccination Alert!", body=body, receiver=baby.parent).save()
+			Notification(title="Overdue Vaccination Alert!", body=body, receiver=baby.parent, baby=baby).save()
 
 		elif flag1 is True:
 			upcoming_string = ', '.join(str(names[e]) for e in upcoming)
-			print(upcoming_string)
 			body = "%s is due for vaccination on %s for following vaccines of week %s  for following vaccines: %s." % (
 				baby.get_full_name(), obj.tentative_date.date(), baby.week, upcoming_string)
 			Notification(title="Upcoming Vaccination Alert!", body=body, receiver=baby.parent, baby=baby).save()

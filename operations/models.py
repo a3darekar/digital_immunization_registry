@@ -255,5 +255,5 @@ class Notification(models.Model):
 			super(Notification, self).save()
 		else:
 			parent = self.receiver
-			parent.notify(self.title, self.body, self.baby.text_notifications)
+			# parent.notify(self.title, self.body, self.baby.text_notifications)
 			super(Notification, self).save()
