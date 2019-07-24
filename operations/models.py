@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+import pytz
 from django.db import models
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
@@ -193,7 +195,7 @@ class VaccineSchedule(models.Model):
 		return self.baby
 
 	def days_from_today(self):
-		return self.tentative_date - datetime.today().date()
+		return (self.tentative_date - datetime.today().replace(tzinfo=pytz.UTC)).days
 
 
 class Appointment(models.Model):
