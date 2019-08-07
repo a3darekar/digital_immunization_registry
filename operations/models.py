@@ -248,6 +248,10 @@ class VaccineRecord(models.Model):
 			if vaccine_schedule.status != 'administered':
 				vaccine_schedule.status='pending'
 				vaccine_schedule.save()
+				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
+				if not vaccine_records.exists():
+					self.appointment.status = 'completed'
+					self.appointment.save()
 			self.appointment.baby.dosage_complete()
 		return self
 
