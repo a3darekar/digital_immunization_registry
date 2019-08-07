@@ -259,17 +259,31 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         else:
             return VaccineRecord.objects.none()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=False):
+            user = self.request.user
+            if user.is_authenticated:
+                baby = serializer.validated_data['baby']
+                appointment = Appointment.objects.filter(baby = baby, status = 'pending')
+                if appointment.exists():
+                    return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
+                else:
+                    self.perform_create(serializer)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response('Failure', status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response('Failure', status=status.HTTP_403_FORBIDDEN)
+
+
+
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_authenticated:
-            baby_id = serializer.data('baby')
-            baby = Baby.objects.get(pk=baby_id)
-            appointment = Appointment.objects.filter(baby=baby, status='pending')
-            if appointment.exists():
-                return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
-            else:
-                clinician = get_object_or_404(Clinitian, user=user)
-                serializer.save(administered_at=clinician.HealthCare)
+            baby = serializer.validated_data['baby']
+            clinician = get_object_or_404(Clinitian, user=user)
+            serializer.save(administered_at=clinician.HealthCare, week=baby.week)
 
 
 class ClinitianViewset(viewsets.ModelViewSet):

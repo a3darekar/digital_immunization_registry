@@ -202,7 +202,7 @@ class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
 	week 				= models.IntegerField()
-	status 				= models.CharField(max_length=50, choices=Appointment_status)
+	status 				= models.CharField(max_length=50, choices=Appointment_status, default='pending')
 	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
 	
