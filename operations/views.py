@@ -262,7 +262,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_authenticated:
-            baby = serializer.baby
+            baby_id = self.kwargs.get('baby')
+            baby = Baby.objects.get(pk = baby_id)
             appointment = Appointment.objects.filter(baby = baby, status = 'pending')
             if appointment.exists():
                 return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
