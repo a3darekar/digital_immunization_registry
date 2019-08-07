@@ -231,11 +231,17 @@ class VaccineRecord(models.Model):
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 		super(VaccineRecord, self).save()
 		if self.status == 'administered':
-			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='administered')
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
+			if vaccine_schedule.status == 'pending':
+				vaccine_schedule.update(status='administered')
 		elif self.status == 'scheduled':
-			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='scheduled')
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
+			if vaccine_schedule.status == 'pending':
+				vaccine_schedule.update(status='scheduled')
 		else:
-			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='pending')
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
+			if vaccine_schedule.status != 'administered':
+				vaccine_schedule.update(status='pending')
 			self.appointment.baby.dosage_complete()
 		return self
 
