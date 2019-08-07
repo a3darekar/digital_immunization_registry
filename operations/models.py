@@ -202,7 +202,7 @@ class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
 	week 				= models.IntegerField()
-	status 				= models.CharField(max_length=50, choices=Appointment_status, default='pending')
+	status 				= models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
 	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
 	
@@ -226,7 +226,7 @@ class VaccineRecord(models.Model):
 	status		= models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
 
 	class Meta:
-		unique_together 	= (('appointment','vaccine'))
+		unique_together 	= ("appointment", "vaccine")
 
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 		super(VaccineRecord, self).save()
@@ -234,6 +234,9 @@ class VaccineRecord(models.Model):
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
 			if vaccine_schedule.status == 'pending':
 				vaccine_schedule.update(status='administered')
+				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
+				if not vaccine_records.exists():
+					self.appointment.update(status='completed')
 		elif self.status == 'scheduled':
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
 			if vaccine_schedule.status == 'pending':

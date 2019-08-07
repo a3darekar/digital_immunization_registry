@@ -67,10 +67,9 @@ vaccine_record_status = (
 )
 
 Appointment_status = (
-	('pending', 'Pending'),
+	('completed', 'Completed'),
 	('scheduled', 'Scheduled'),
-	('cancelled', 'Cancelled'),
-	('approved', 'Approved')
+	('cancelled', 'Cancelled')
 )
 
 BloodGroup = (
