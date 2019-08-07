@@ -262,9 +262,13 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         if user.is_authenticated:
-            clinitian = get_object_or_404(Clinitian, user=user)
-            healthcare = clinitian.HealthCare
-            serializer.save(administered_at=healthcare)
+            baby = self.request.baby
+            appointment = Appointment.objects.filter(baby = baby, status = 'pending')
+            if appointment.exists():
+                return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
+            else:
+                clinician = get_object_or_404(Clinitian, user=user)
+                serializer.save(administered_at=clinician.HealthCare)
 
 
 class ClinitianViewset(viewsets.ModelViewSet):

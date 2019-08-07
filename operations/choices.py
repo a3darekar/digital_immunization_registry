@@ -66,7 +66,7 @@ vaccine_record_status = (
 	('administered', 'Administered'),
 )
 
-Appointmnet_status = (
+Appointment_status = (
 	('pending', 'Pending'),
 	('scheduled', 'Scheduled'),
 	('cancelled', 'Cancelled'),

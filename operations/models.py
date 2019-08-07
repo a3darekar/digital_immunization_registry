@@ -154,8 +154,8 @@ class Baby(models.Model):
 		else:
 			super(Baby, self).save()
 			# Add Vaccine with the tentative date
-			Vaccines = dict(Vaccinations)
-			for week,vaccine in Vaccines.items():
+			vaccines = dict(Vaccinations)
+			for week,vaccine in vaccines.items():
 				my_dict = dict(vaccine)
 				for name, Name in my_dict.items():
 					v = VaccineSchedule(baby = self, vaccine = name, week = week, tentative_date = self.birth_date+timedelta(week*7), status = 'pending')
@@ -179,6 +179,7 @@ class Baby(models.Model):
 			super(Baby, self).save()
 		return self
 
+
 class VaccineSchedule(models.Model):
 	"""Schedule of Vaccines in to br Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_schedules")
@@ -186,7 +187,6 @@ class VaccineSchedule(models.Model):
 	week				= models.PositiveIntegerField(default = 0)
 	tentative_date 		= models.DateTimeField(default = datetime.now)	
 	status		 		= models.CharField('Vaccine Status', max_length=20, choices=Vaccine_Status)
-	
 
 	class Meta:
 		unique_together 	= (('baby','vaccine'))
@@ -201,6 +201,8 @@ class VaccineSchedule(models.Model):
 class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
+	week 				= models.IntegerField()
+	status 				= models.CharField(max_length=50, choices=Appointment_status)
 	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
 	
@@ -215,6 +217,7 @@ class Appointment(models.Model):
 
 
 Vaccine_status = dict(Vaccine_Status)
+
 
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
@@ -235,6 +238,7 @@ class VaccineRecord(models.Model):
 			VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='pending')
 			self.appointment.baby.dosage_complete()
 		return self
+
 
 class Notification(models.Model):
 	"""
