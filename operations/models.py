@@ -201,7 +201,6 @@ class VaccineSchedule(models.Model):
 class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby 				= models.ForeignKey(Baby, related_name = "vaccine_records")
-	week 				= models.IntegerField()
 	status 				= models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
 	administered_on 	= models.DateTimeField(default = datetime.now)	
 	administered_at 	= models.ForeignKey(HealthCare, related_name="phc")
@@ -231,20 +230,24 @@ class VaccineRecord(models.Model):
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 		super(VaccineRecord, self).save()
 		if self.status == 'administered':
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
-			if vaccine_schedule.status == 'pending':
-				vaccine_schedule.update(status='administered')
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+			if vaccine_schedule.status == 'scheduled':
+				vaccine_schedule.status = 'administered'
+				vaccine_schedule.save()
 				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 				if not vaccine_records.exists():
-					self.appointment.update(status='completed')
+					self.appointment.status='completed'
+					self.appointment.save()
 		elif self.status == 'scheduled':
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status == 'pending':
-				vaccine_schedule.update(status='scheduled')
+				vaccine_schedule.status='scheduled'
+				vaccine_schedule.save()
 		else:
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine)
+			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status != 'administered':
-				vaccine_schedule.update(status='pending')
+				vaccine_schedule.status='pending'
+				vaccine_schedule.save()
 			self.appointment.baby.dosage_complete()
 		return self
 

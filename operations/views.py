@@ -265,7 +265,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             user = self.request.user
             if user.is_authenticated:
                 baby = serializer.validated_data['baby']
-                appointment = Appointment.objects.filter(baby = baby, status = 'pending')
+                appointment = Appointment.objects.filter(baby = baby, status = 'scheduled')
                 if appointment.exists():
                     return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
                 else:
@@ -283,7 +283,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
         if user.is_authenticated:
             baby = serializer.validated_data['baby']
             clinician = get_object_or_404(Clinitian, user=user)
-            serializer.save(administered_at=clinician.HealthCare, week=baby.week)
+            serializer.save(administered_at=clinician.HealthCare)
 
 
 class ClinitianViewset(viewsets.ModelViewSet):
