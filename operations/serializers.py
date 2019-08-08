@@ -86,8 +86,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Appointment
-		fields = ('id', 'baby', 'administered_at', 'administered_on')
-		read_only_fields = ('id', 'administered_at', 'administered_on')
+		fields = ('id', 'baby', 'administered_at', 'administered_on', 'status')
+		read_only_fields = ('id', 'administered_at', 'administered_on', 'status')
 
 
 class NotificationSerializer(serializers.ModelSerializer):

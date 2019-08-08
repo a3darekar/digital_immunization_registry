@@ -69,6 +69,7 @@ vaccine_record_status = (
 Appointment_status = (
 	('completed', 'Completed'),
 	('scheduled', 'Scheduled'),
+	('partial', 'Partially Completed'),
 	('cancelled', 'Cancelled')
 )
 

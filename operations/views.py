@@ -6,7 +6,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
 from django.views.generic import View
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from rest_framework.decorators import api_view
 from rest_framework.routers import DefaultRouter
 from rest_framework.response import Response
@@ -140,24 +140,10 @@ class BabyViewset(viewsets.ModelViewSet):
         if parent:
             return Baby.objects.filter(parent=parent)
         queryset = Baby.objects.all()
-        tag = self.request.query_params.get('tag', None)
-        email = self.request.query_params.get('email', None)
-        contact = self.request.query_params.get('contact', None)
-        name = self.request.query_params.get('name', None)
-        aadhaar = self.request.query_params.get('aadhaar', None)
-        if tag is not None:
-            queryset = Baby.objects.filter(tag__contains=tag)
-        elif name is not None:
-            queryset = Baby.objects.filter(first_name__contains=name) | Baby.objects.filter(last_name__contains=name)
-        elif email is not None:
-            parent = Parent.objects.filter(email=email)
-            queryset = Baby.objects.filter(parent=parent)
-        elif contact is not None:
-            parent = Parent.objects.filter(contact=contact)
-            queryset = Baby.objects.filter(parent=parent)
-        elif aadhaar is not None:
-            parent = Parent.objects.filter(unique_id=aadhaar)
-            queryset = Baby.objects.filter(parent=parent)
+        search_param = self.request.query_params.get('search', None)
+        if search_param is not None:
+            parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(email__contains=search_param))
+            queryset = Baby.objects.filter(Q(tag__contains = search_param) | Q(first_name__contains=search_param) | Q(last_name__contains=search_param) | Q(parent=parent))
         return queryset
 
     def update(self, request, *args, **kwargs):
@@ -265,9 +251,18 @@ class AppointmentViewSet(viewsets.ModelViewSet):
             user = self.request.user
             if user.is_authenticated:
                 baby = serializer.validated_data['baby']
-                appointment = Appointment.objects.filter(baby = baby, status = 'scheduled')
-                if appointment.exists():
+                scheduled_appointment = Appointment.objects.filter(baby=baby, status='scheduled')
+                recent_appointments = Appointment.objects.filter( Q(baby=baby, status='completed') | Q(baby=baby, status='partial')).order_by('-administered_on')
+                recent_flag = False
+                for recent_appointment in recent_appointments:
+                    if recent_appointment.days_from_today() < 28:
+                        recent_flag = True
+                    print(recent_appointment)
+                if scheduled_appointment.exists():
                     return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
+                elif recent_flag:
+                    print(recent_flag)
+                    return Response('vaccination cool down period', status=status.HTTP_307_TEMPORARY_REDIRECT)
                 else:
                     self.perform_create(serializer)
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -275,8 +270,6 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 return Response('Failure', status=status.HTTP_403_FORBIDDEN)
         else:
             return Response('Failure', status=status.HTTP_403_FORBIDDEN)
-
-
 
     def perform_create(self, serializer):
         user = self.request.user
