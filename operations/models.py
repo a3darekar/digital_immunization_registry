@@ -18,8 +18,8 @@ class HealthCare(models.Model):
 	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
 
 	class Meta:
-		verbose_name = ('Primary Health Care')
-		verbose_name_plural = ('Primary Health Cares')
+		verbose_name = 'Primary Health Care'
+		verbose_name_plural = 'Primary Health Cares'
 
 	def __str__(self):
 		return self.name
@@ -29,21 +29,21 @@ class Parent(models.Model):
 	"""Parent credentials for login and contact"""
 	user = models.OneToOneField(User,
 								help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.")
-	email = models.EmailField(('email address'), unique=True)
-	first_name = models.CharField(('first name'), max_length=30, blank=True)
-	last_name = models.CharField(('last name'), max_length=30, blank=True)
+	email = models.EmailField('email address', unique=True)
+	first_name = models.CharField('first name', max_length=30, blank=True)
+	last_name = models.CharField('last name', max_length=30, blank=True)
 	address = models.CharField(max_length=200)
 	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
-	unique_id = models.CharField(('Aadhaar ID'), max_length=13, validators=[
+	unique_id = models.CharField('Aadhaar ID', max_length=13, validators=[
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
 
 	USERNAME_FIELD = 'user'
 	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', contact]
 
 	class Meta:
-		verbose_name = ('parent')
-		verbose_name_plural = ('parents')
-		unique_together = (('user', 'id'))
+		verbose_name = 'parent'
+		verbose_name_plural = 'parents'
+		unique_together = ('user', 'id')
 
 	def __str__(self):
 		return self.get_full_name()
@@ -80,7 +80,7 @@ class Parent(models.Model):
 
 
 class Clinitian(models.Model):
-	"""Clinitian access"""
+	"""Clinician access"""
 	user = models.OneToOneField(User,
 								help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.")
 	email = models.EmailField(('email address'), unique=True)
@@ -92,7 +92,7 @@ class Clinitian(models.Model):
 	HealthCare = models.ForeignKey(HealthCare)
 
 	USERNAME_FIELD = 'user'
-	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', contact]
+	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'contact']
 
 	def __str__(self):
 		return self.get_full_name()
@@ -108,8 +108,8 @@ class Clinitian(models.Model):
 		super(Clinitian, self).save()
 
 	class Meta:
-		verbose_name = ('Clinitian')
-		verbose_name_plural = ('Clinitians')
+		verbose_name = 'Clinician'
+		verbose_name_plural = 'Clinicians'
 
 	def get_full_name(self):
 		full_name = '%s %s' % (self.first_name, self.last_name)
@@ -140,8 +140,8 @@ class Baby(models.Model):
 		return self.get_full_name()
 
 	class Meta:
-		verbose_name = ('baby')
-		verbose_name_plural = ('babies')
+		verbose_name = 'Baby'
+		verbose_name_plural = 'Babies'
 
 	def get_full_name(self):
 		full_name = '%s %s' % (self.first_name, self.last_name)
@@ -197,6 +197,8 @@ class VaccineSchedule(models.Model):
 
 	class Meta:
 		unique_together = ('baby', 'vaccine')
+		verbose_name = 'Vaccine Schedule'
+		verbose_name_plural = 'Vaccine Schedules'
 
 	def get_full_name(self):
 		return self.baby
@@ -211,6 +213,10 @@ class Appointment(models.Model):
 	status = models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
 	administered_on = models.DateTimeField(default=datetime.now)
 	administered_at = models.ForeignKey(HealthCare, related_name="phc")
+
+	class Meta:
+		verbose_name = 'Appointment'
+		verbose_name_plural = 'Appointments'
 
 	def __str__(self):
 		return self.baby.first_name + str(self.pk)
@@ -233,6 +239,8 @@ class VaccineRecord(models.Model):
 
 	class Meta:
 		unique_together = ("appointment", "vaccine")
+		verbose_name = 'Vaccine Record'
+		verbose_name_plural = 'Vaccine Records'
 
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 		super(VaccineRecord, self).save()
