@@ -219,7 +219,7 @@ class Appointment(models.Model):
 		return self.baby
 
 	def days_from_today(self):
-		return (self.administered_on - datetime.today().replace(tzinfo=pytz.UTC)).days
+		return (datetime.today().replace(tzinfo=pytz.UTC) - self.administered_on).days
 
 
 Vaccine_status = dict(Vaccine_Status)
