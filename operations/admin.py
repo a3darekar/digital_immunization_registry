@@ -35,6 +35,8 @@ class ClinitianAdmin(admin.ModelAdmin):
 		('Misc Information', {'fields': ['HealthCare']}),
 	]
 
+	list_filter = ('HealthCare', )
+
 	def name(self, obj):
 		return obj.get_full_name()
 
@@ -49,6 +51,8 @@ class BabyAdmin(admin.ModelAdmin):
 		('Administration Information', {'fields': ['tag', 'special_notes', 'text_notifications']})
 	]
 
+	list_filter = ('parent', 'week', 'blood_group', 'gender')
+
 	form = BabyModelForm
 
 	def name(self, obj):
@@ -62,11 +66,13 @@ class VaccineScheduleAdmin(admin.ModelAdmin):
 		return obj.baby.get_full_name()
 
 	def vaccine_status(self, obj):
-		return ("%s" % (obj.status)).upper()
+		return ("%s" % obj.status).upper()
 
 	vaccine_status.short_description = 'Vaccine Status'
 
-	list_display = ('Baby', 'vaccine', 'vaccine_status', 'week', 'tentative_date')
+	list_display = ('baby', 'vaccine', 'vaccine_status', 'week', 'tentative_date')
+
+	list_filter = ('baby', 'vaccine', 'status', 'week')
 
 
 class AppointmentAdmin(admin.ModelAdmin):
@@ -75,7 +81,9 @@ class AppointmentAdmin(admin.ModelAdmin):
 	def Baby(self, obj):
 		return obj.baby.get_full_name()
 
-	list_display = ('id', 'Baby', 'administered_at', 'status', 'administered_on')
+	list_display = ('id', 'baby', 'administered_at', 'status', 'administered_on')
+
+	list_filter = ('baby', 'administered_at', 'administered_on', 'status')
 
 
 class VaccineRecordAdmin(admin.ModelAdmin):
@@ -86,11 +94,15 @@ class VaccineRecordAdmin(admin.ModelAdmin):
 
 	list_display = ('Appointment', 'vaccine', 'status')
 
+	list_filter = ('appointment', 'vaccine', 'status')
+
 
 class NotificationAdmin(admin.ModelAdmin):
 	"""docstring for VaccineRecordAdmin"""
 
 	list_display = ('receiver', 'status', 'notif_type', 'notif_time', 'title')
+
+	list_filter = ('receiver', 'status', 'notif_type')
 
 
 admin.site.register(Parent, ParentAdmin)
