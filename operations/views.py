@@ -258,7 +258,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
                 for recent_appointment in recent_appointments:
                     if recent_appointment.days_from_today() < 28:
                         recent_flag = True
-                        days_till_vaccination = recent_appointment.days_from_today()
+                        days_till_vaccination = 28 - recent_appointment.days_from_today()
                         break
                     print(recent_appointment)
                 if scheduled_appointment.exists():
