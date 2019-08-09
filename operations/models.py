@@ -244,6 +244,7 @@ class VaccineRecord(models.Model):
 				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 				if vaccine_records.exists():
 					self.appointment.status = 'partial'
+					self.appointment.save()
 				else:
 					self.appointment.status = 'completed'
 					self.appointment.save()
