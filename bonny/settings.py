@@ -19,10 +19,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '################################################'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -62,6 +62,7 @@ MIDDLEWARE = [
 	'django.middleware.csrf.CsrfViewMiddleware',
 	'django.contrib.auth.middleware.AuthenticationMiddleware',
 	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	# 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -160,8 +161,35 @@ SECURE_SSL_REDIRECT = True
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_BROWSER_XSS_FILTER = True
+
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SECURE = True
+
+X_FRAME_OPTIONS = 'DENY'
+
+SECURE_HSTS_SECONDS = 31536000
+
+SECURE_HSTS_PRELOAD = True
+
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+
+BROKER_URL = 'redis://localhost:6379/1'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+#CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+
+import djcelery
+djcelery.setup_loader()
+
+
 FCM_DJANGO_SETTINGS = {
-	"FCM_SERVER_KEY": "",
+	"FCM_SERVER_KEY": os.environ["FCM_KEY"],
 	# true if you want to have only one active device per registered user at a time
 	# default: False
 	"ONE_DEVICE_PER_USER": False,
@@ -171,11 +199,3 @@ FCM_DJANGO_SETTINGS = {
 	"DELETE_INACTIVE_DEVICES": True,
 }
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = '*****@gmail.com'
-EMAIL_HOST_PASSWORD = '********'
-
-from .local_settings import *
