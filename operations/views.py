@@ -59,7 +59,7 @@ def generatePdf(request, *args, **kwargs):
 				"baby": baby,
 				"schedule": schedule,
 				"today": date,
-			}mosdfmso
+			}
 			if download:
 				pdf = render_to_pdf('Schedule_report.html', context)
 				filename = "Immunization_Schedule_-_%s_%s" % (baby.first_name, baby.last_name)

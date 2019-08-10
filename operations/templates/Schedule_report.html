@@ -54,13 +54,12 @@
 
         </style>
 
-
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">#}
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <div class='wrapper'>
             <div class='header'>
-                <h1 class="title">Vaccination Report </h1>
+                <h1 class="title">Vaccination Report</h1>
             </div>
         <div>
         <div class='details'>
@@ -81,12 +80,10 @@
         <div class="details-left">
             <span>
                 <b><i>Parent Details:</i></b>
-            </span>                                                             <br/>
-
+            </span> <br/>
             <span>
                 <b>Name: </b>{{ baby.parent }}
             </span>                                                             <br/>
-
             <span>
                 <b>Email: </b>{{ baby.parent.email }}
             </span>                                                             <br/>
@@ -97,18 +94,14 @@
         <span  style="text-align: center;">
             <b>Special Notes:</b> {{ baby.special_notes }}
         </span>
-   
         {% if schedule %}
         {% regroup schedule by week as grouped_list %}
-                    
-       
         <table class="table table-striped" style="text-align: center;">
-        {% for vaccine_group in grouped_list|dictsort:"grouper"  %}
+            {% for vaccine_group in grouped_list|dictsort:"grouper"  %}
             <thead class="thead-dark">
                 <tr>
                     <th colspan="4" style="text-align: center;">Week : {{ vaccine_group.grouper }}</th>
                 </tr>
-
                 <tr>
                     <th>ID</th>
                     <th>Vaccine</th>
@@ -123,7 +116,7 @@
             <tbody>
                 {% for vaccine in vaccine_group.list  %}
                 <tr class="{{vaccine.status}}">
-                    <td>{{vaccine.id}}</td>
+                    <td>{{forloop.counter}}</td>
                     <td>{{vaccine.vaccine}}</td>
                     <td>{{vaccine.tentative_date|date:"D, d M, Y"}}</td>
                     <td>{{vaccine.status}}</td>
@@ -133,9 +126,7 @@
             </tbody>
         </table>
         <h4>Report generated on
-
          {{ today }}
-
         </h4>
             <hr class='hrItem' />
         {% else %}
