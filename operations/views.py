@@ -30,6 +30,7 @@ from django import forms
 
 class PdfForm(forms.Form):
 	tag = forms.CharField(help_text="enter tag")
+	download = forms.BooleanField(initial=False, required=False)
 
 	error_css_class = 'error'
 	required_css_class = 'required'
@@ -42,7 +43,7 @@ def generatePdf(request, *args, **kwargs):
 		if form.is_valid():
 			form_data = form.cleaned_data
 			tag = form_data['tag']
-
+			download = form_data['download']
 			baby = get_object_or_404(Baby, tag=tag)
 			blood_group = dict(BloodGroup)
 			vaccine_names = dict(Vaccine_names)
@@ -58,20 +59,20 @@ def generatePdf(request, *args, **kwargs):
 				"baby": baby,
 				"schedule": schedule,
 				"today": date,
-			}
-			pdf = render_to_pdf('Schedule_report.html', context)
-			filename = "Immunization Schedule - %s (%s).pdf" % (baby, context['today'])
-			return render(request, 'Schedule_report.html', context)
-
-			# response = HttpResponse(pdf, content_type='application/pdf')
-			# content = "attachment; filename='%s'" % (filename)
-			# response['Content-Disposition'] = content
-			# return response
+			}mosdfmso
+			if download:
+				pdf = render_to_pdf('Schedule_report.html', context)
+				filename = "Immunization_Schedule_-_%s_%s" % (baby.first_name, baby.last_name)
+				response = HttpResponse(pdf, content_type='application/pdf')
+				content = "attachment; filename=%s.pdf" % filename
+				response['Content-Disposition'] = content
+				return response
+			else:
+				return render(request, 'Schedule_report.html', context)
 
 	form = PdfForm()
 	context = {'form': form, 'message': success}
 	return render(request, 'pdf_form.html', context)
-
 
 
 # Create your views here.
