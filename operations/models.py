@@ -8,6 +8,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from fcm_django.models import FCMDevice
 from phonenumber_field.modelfields import PhoneNumberField
+from .twilio_credentials import client
 
 from .choices import *
 
@@ -68,7 +69,6 @@ class Parent(models.Model):
 		super(Parent, self).save()
 
 	def notify(self, title, body, text_notifications=False):
-		from .twilio_credentials import client
 		device = FCMDevice.objects.all()
 		if device:
 			device.send_message(title, body)
@@ -78,7 +78,6 @@ class Parent(models.Model):
 				from_="+13373074483",
 				body="%s \n %s " % (title, body)
 			)
-			print(message.sid)
 
 
 class Clinitian(models.Model):
