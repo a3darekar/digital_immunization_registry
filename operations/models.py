@@ -1,13 +1,15 @@
 from __future__ import unicode_literals
 
-import pytz
-from django.db import models
 from datetime import datetime, timedelta
+
+import pytz
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
-from phonenumber_field.modelfields import PhoneNumberField
-from .choices import *
+from django.db import models
 from fcm_django.models import FCMDevice
+from phonenumber_field.modelfields import PhoneNumberField
+
+from .choices import *
 
 
 class HealthCare(models.Model):
@@ -255,16 +257,34 @@ class VaccineRecord(models.Model):
 				else:
 					self.appointment.status = 'completed'
 				self.appointment.save()
+				Notification(
+					title="Vaccination Appointment Alert",
+					body="Vaccination Administered for vaccine %s" % self.vaccine,
+					receiver=self.appointment.baby.parent,
+					notif_type='success'
+				).save()
 		elif self.status == 'scheduled':
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status == 'pending':
 				vaccine_schedule.status = 'scheduled'
 				vaccine_schedule.save()
+			Notification(
+				title="Vaccination Appointment Alert",
+				body="Vaccination appointment Scheduled for vaccine %s" % self.vaccine,
+				receiver=self.appointment.baby.parent,
+				notif_type='info'
+			).save()
 		else:
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status == 'scheduled':
 				vaccine_schedule.status = 'pending'
 				vaccine_schedule.save()
+				Notification(
+					title="Vaccination Appointment Alert",
+					body="Vaccination appointment Cancelled for vaccine %s" % self.vaccine,
+					receiver=self.appointment.baby.parent,
+					notif_type='error'
+				).save()
 				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 				if not vaccine_records.exists():
 					if self.appointment.status != 'partial':
@@ -272,7 +292,7 @@ class VaccineRecord(models.Model):
 					else:
 						self.appointment.status = 'completed'
 					self.appointment.save()
-			self.appointment.baby.dosage_complete()
+		self.appointment.baby.dosage_complete()
 		return self
 
 
@@ -284,9 +304,9 @@ class Notification(models.Model):
 	baby = models.ForeignKey(Baby, related_name='Baby')
 	title = models.CharField(max_length=100)
 	body = models.CharField(max_length=300)
-	status = models.BooleanField(('Status'), default=False)
-	notif_type = models.CharField(('Notification Type'), max_length=40, choices=NotificationType)
-	notif_time = models.DateTimeField(('Notification Time'), default=datetime.now)
+	status = models.BooleanField('Status', default=False)
+	notif_type = models.CharField('Notification Type', max_length=40, choices=NotificationType, default='info')
+	notif_time = models.DateTimeField('Notification Time', default=datetime.now)
 
 	class Meta:
 		verbose_name = 'Notification'

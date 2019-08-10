@@ -123,4 +123,5 @@ NotificationType = (
 	('info', 'info'),
 	('success', 'success'),
 	('error', 'error'),
+	('danger', 'danger'),
 )
