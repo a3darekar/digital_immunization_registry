@@ -16,307 +16,305 @@ from .models import *
 from .twilio_credentials import *
 from .choices import Vaccine_names, BloodGroup, Vaccine_Status
 from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, \
-    VaccineRecordSerializer, ClinicianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
+	VaccineRecordSerializer, ClinicianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
 from fcm_django.models import FCMDevice
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework import generics
 # PDF generation and Email backend imports
-from django.db.models import Count
+
 from .utils import render_to_pdf
 from django.core.mail import EmailMessage
-from django.template.loader import get_template
+
+from django import forms
 
 
-class GeneratePdf(View):
-    def get(self, request, *args, **kwargs):
-        request_param = request.GET.get("tag")
+class PdfForm(forms.Form):
+	tag = forms.CharField(help_text="enter tag")
 
-        if not request_param:
-            raise Http404
-        blood_group = dict(BloodGroup)
-        vaccine_names = dict(Vaccine_names)
-        vaccine_status = dict(Vaccine_status)
-        baby = get_object_or_404(Baby, tag=request_param)
-        baby.blood_group = blood_group[baby.blood_group]
-        schedule = VaccineSchedule.objects.filter(baby=baby)
-        for vaccine_schedule in schedule:
-            vaccine_schedule.vaccine = vaccine_names[vaccine_schedule.vaccine]
-            vaccine_schedule.status = vaccine_status[vaccine_schedule.status]
-        date = pytz.timezone("Asia/Kolkata").localize(datetime.today())
-        context = {
-            "baby": baby,
-            "schedule": schedule,
-            "today": date,
-        }
-        pdf = render_to_pdf('Scheule_report.html', context)
-        filename = "Report_%s.pdf" % (context['today'])
-
-        if not request_param:
-            raise Http404
-        # return render(request, 'Scheule_report.html', context)
-        # response = HttpResponse(html)
-        # return response
-
-        response = HttpResponse(pdf, content_type='application/pdf')
-        content = 'inline; filename="%s"' % (filename)
-        download = request.GET.get("download")
-        if download:
-            content = "attachment; filename='%s'" % (filename)
-            response['Content-Disposition'] = content
-            return response
+	error_css_class = 'error'
+	required_css_class = 'required'
 
 
-def notify(parent):
-    email = EmailMessage('Vaccination Schedule', 'vaccination schedule of ya baby', to=[baby.parent.email],
-                         headers={'Reply-To': 'admin@bonny.com'})
-    email.attach('filename', pdf.read(), 'application/pdf')
-    email.content_subtype = "html"
-    email_sent = email.send()
-    client = Client(account_sid, auth_token)
-    message = client.messages.create(
-        to=parent.contact,
-        from_="+13373074483",
-        body="Check your MMCOE email!!")
-    print(message)
+def generatePdf(request, *args, **kwargs):
+	success = ''
+	if request.method == 'POST':
+		form = PdfForm(request.POST)
+		if form.is_valid():
+			form_data = form.cleaned_data
+			tag = form_data['tag']
+
+			baby = get_object_or_404(Baby, tag=tag)
+			blood_group = dict(BloodGroup)
+			vaccine_names = dict(Vaccine_names)
+			vaccine_status = dict(Vaccine_status)
+
+			baby.blood_group = blood_group[baby.blood_group]
+			schedule = VaccineSchedule.objects.filter(baby=baby)
+			for vaccine_schedule in schedule:
+				vaccine_schedule.vaccine = vaccine_names[vaccine_schedule.vaccine]
+				vaccine_schedule.status = vaccine_status[vaccine_schedule.status]
+			date = pytz.timezone("Asia/Kolkata").localize(datetime.today())
+			context = {
+				"baby": baby,
+				"schedule": schedule,
+				"today": date,
+			}
+			pdf = render_to_pdf('Schedule_report.html', context)
+			filename = "Immunization Schedule - %s (%s).pdf" % (baby, context['today'])
+			return render(request, 'Schedule_report.html', context)
+
+			# response = HttpResponse(pdf, content_type='application/pdf')
+			# content = "attachment; filename='%s'" % (filename)
+			# response['Content-Disposition'] = content
+			# return response
+
+	form = PdfForm()
+	context = {'form': form, 'message': success}
+	return render(request, 'pdf_form.html', context)
+
 
 
 # Create your views here.
 def index(request):
-    return HttpResponse(
-        "<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site "
-        "Administrator.")
+	return HttpResponse(
+		"<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site "
+		"Administrator.")
 
 
 @api_view(['POST'])
 def schedule_vaccines(request):
-    if request.method == 'POST':
-        appointment = request.POST['appointment']
-        appointment = Appointment.objects.get(pk=appointment)
-        if appointment:
-            vaccines = str(request.POST['vaccines'])
-            vaccines = vaccines.split(',')
-            vaccine_names = dict(Vaccine_names)
-            for vaccine in vaccines:
-                vaccine_record = VaccineRecord(appointment=appointment, vaccine=vaccine)
-                vaccine_record.save()
-                baby = vaccine_record.appointment.baby
-                schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine).update(status='scheduled')
-            return HttpResponse(
-                "{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
-        else:
-            return HttpResponse("No Appointment found")
-    else:
-        return HttpResponse("No post data")
+	if request.method == 'POST':
+		appointment = request.POST['appointment']
+		appointment = Appointment.objects.get(pk=appointment)
+		if appointment:
+			vaccines = str(request.POST['vaccines'])
+			vaccines = vaccines.split(',')
+			vaccine_names = dict(Vaccine_names)
+			for vaccine in vaccines:
+				vaccine_record = VaccineRecord(appointment=appointment, vaccine=vaccine)
+				vaccine_record.save()
+				baby = vaccine_record.appointment.baby
+				schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine).update(status='scheduled')
+			return HttpResponse(
+				"{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
+		else:
+			return HttpResponse("No Appointment found")
+	else:
+		return HttpResponse("No post data")
 
 
 # VIEWSETS
 
 class UserListView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+	queryset = User.objects.all()
+	serializer_class = UserSerializer
 
 
 class HealthCareViewSet(viewsets.ModelViewSet):
-    """docstring for HealthCareViewSet"""
-    serializer_class = HealthCareSerializer
-    permission_classes = (IsAuthenticated,)
+	"""docstring for HealthCareViewSet"""
+	serializer_class = HealthCareSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        pk = self.request.query_params.get('pk', None)
-        if pk is not None:
-            return HealthCare.objects.filter(pk=pk)
-        else:
-            return HealthCare.objects.all()
+	def get_queryset(self):
+		pk = self.request.query_params.get('pk', None)
+		if pk is not None:
+			return HealthCare.objects.filter(pk=pk)
+		else:
+			return HealthCare.objects.all()
 
 
 class BabyViewset(viewsets.ModelViewSet):
-    """BabyViewset for REST Endpoint"""
-    serializer_class = BabySerializer
-    permission_classes = (IsAuthenticated,)
+	"""BabyViewset for REST Endpoint"""
+	serializer_class = BabySerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        parent = Parent.objects.filter(user=user)
-        if parent:
-            return Baby.objects.filter(parent=parent)
-        queryset = Baby.objects.all()
-        search_param = self.request.query_params.get('search', None)
-        if search_param is not None:
-            parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(email__contains=search_param))
-            queryset = Baby.objects.filter(Q(tag__contains = search_param) | Q(first_name__contains=search_param) | Q(last_name__contains=search_param) | Q(parent=parent))
-        return queryset
+	def get_queryset(self):
+		user = self.request.user
+		parent = Parent.objects.filter(user=user)
+		if parent:
+			return Baby.objects.filter(parent=parent)
+		queryset = Baby.objects.all()
+		search_param = self.request.query_params.get('search', None)
+		if search_param is not None:
+			parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(
+				email__contains=search_param))
+			queryset = Baby.objects.filter(Q(tag__contains=search_param) | Q(first_name__contains=search_param) | Q(
+				last_name__contains=search_param) | Q(parent=parent))
+		return queryset
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.first_name = request.data.get("first_name")
-        instance.last_name = request.data.get("last_name")
-        instance.tag = request.data.get("tag")
-        instance.place_of_birth = request.data.get("place_of_birth")
-        instance.blood_group = request.data.get("blood_group")
-        instance.gender = request.data.get("gender")
-        instance.weight = request.data.get("weight")
-        instance.week = request.data.get("week")
-        instance.special_notes = request.data.get("special_notes")
-        instance.text_notifications = request.data.get("text_notifications")
-        instance.save()
-        serializer = VaccineRecordSerializer(instance=instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		instance.first_name = request.data.get("first_name")
+		instance.last_name = request.data.get("last_name")
+		instance.tag = request.data.get("tag")
+		instance.place_of_birth = request.data.get("place_of_birth")
+		instance.blood_group = request.data.get("blood_group")
+		instance.gender = request.data.get("gender")
+		instance.weight = request.data.get("weight")
+		instance.week = request.data.get("week")
+		instance.special_notes = request.data.get("special_notes")
+		instance.text_notifications = request.data.get("text_notifications")
+		instance.save()
+		serializer = VaccineRecordSerializer(instance=instance)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class VaccineScheduleViewset(viewsets.ModelViewSet):
-    """VaccineScheduleViewset for REST Endpoint"""
-    serializer_class = VaccineScheduleSerializer
-    permission_classes = (IsAuthenticated,)
+	"""VaccineScheduleViewset for REST Endpoint"""
+	serializer_class = VaccineScheduleSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            pk = self.request.query_params.get('pk', None)
-            if pk is not None:
-                baby = get_object_or_404(Baby, pk=pk)
-                return VaccineSchedule.objects.filter(baby=baby)
-            else:
-                VaccineSchedule.objects.none()
-        else:
-            return Parent.objects.none()
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
+				baby = get_object_or_404(Baby, pk=pk)
+				return VaccineSchedule.objects.filter(baby=baby)
+			else:
+				VaccineSchedule.objects.none()
+		else:
+			return Parent.objects.none()
 
 
 class VaccineRecordViewset(viewsets.ModelViewSet):
-    """VaccineRecordViewset for REST Endpoint"""
-    serializer_class = VaccineRecordSerializer
-    permission_classes = (IsAuthenticated,)
+	"""VaccineRecordViewset for REST Endpoint"""
+	serializer_class = VaccineRecordSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            pk = self.request.query_params.get('pk', None)
-            if pk is not None:
-                appointment = get_object_or_404(Appointment, pk=pk)
-                return VaccineRecord.objects.filter(appointment=appointment)
-            else:
-                return VaccineRecord.objects.all()
-        else:
-            return VaccineRecord.objects.none()
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
+				appointment = get_object_or_404(Appointment, pk=pk)
+				return VaccineRecord.objects.filter(appointment=appointment)
+			else:
+				return VaccineRecord.objects.all()
+		else:
+			return VaccineRecord.objects.none()
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.status = request.data.get("status")
-        appointment = request.data.get("appointment")
-        instance.appointment = get_object_or_404(Appointment, pk=appointment)
-        baby = instance.appointment.baby
-        instance.save()
-        serializer = VaccineRecordSerializer(instance=instance)
-        baby.dosage_complete()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		instance.status = request.data.get("status")
+		appointment = request.data.get("appointment")
+		instance.appointment = get_object_or_404(Appointment, pk=appointment)
+		baby = instance.appointment.baby
+		instance.save()
+		serializer = VaccineRecordSerializer(instance=instance)
+		baby.dosage_complete()
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class ParentViewset(viewsets.ModelViewSet):
-    """ParentViewset for REST Endpoint"""
-    serializer_class = ParentSerializer
-    permission_classes = (IsAuthenticated,)
+	"""ParentViewset for REST Endpoint"""
+	serializer_class = ParentSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        pk = self.request.query_params.get('pk', None)
-        if pk is not None:
-            parent = Parent.objects.filter(user=pk)
-            if user.pk == parent[0].user.pk:
-                return parent
-        return Parent.objects.all()
+	def get_queryset(self):
+		user = self.request.user
+		pk = self.request.query_params.get('pk', None)
+		if pk is not None:
+			parent = Parent.objects.filter(user=pk)
+			if user.pk == parent[0].user.pk:
+				return parent
+		return Parent.objects.all()
 
 
 class AppointmentViewSet(viewsets.ModelViewSet):
-    """docstring for AppointmentViewSet"""
-    serializer_class = AppointmentSerializer
-    permission_classes = (IsAuthenticated,)
+	"""docstring for AppointmentViewSet"""
+	serializer_class = AppointmentSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            pk = self.request.query_params.get('pk', None)
-            if pk is not None:
-                baby = get_object_or_404(Baby, pk=pk)
-                if baby is not None:
-                    return Appointment.objects.filter(baby=baby)
-                else:
-                    return VaccineRecord.objects.none()
-            else:
-                return VaccineRecord.objects.none()
-        else:
-            return VaccineRecord.objects.none()
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			pk = self.request.query_params.get('pk', None)
+			if pk is not None:
+				baby = get_object_or_404(Baby, pk=pk)
+				if baby is not None:
+					return Appointment.objects.filter(baby=baby)
+				else:
+					return VaccineRecord.objects.none()
+			else:
+				return VaccineRecord.objects.none()
+		else:
+			return VaccineRecord.objects.none()
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=False):
-            user = self.request.user
-            if user.is_authenticated:
-                baby = serializer.validated_data['baby']
-                scheduled_appointment = Appointment.objects.filter(baby=baby, status='scheduled')
-                recent_appointments = Appointment.objects.filter( Q(baby=baby, status='completed') | Q(baby=baby, status='partial')).order_by('-administered_on')
-                recent_flag = False
-                days_till_vaccination = 0
-                for recent_appointment in recent_appointments:
-                    if recent_appointment.days_from_today() < 28:
-                        recent_flag = True
-                        days_till_vaccination = 28 - recent_appointment.days_from_today()
-                        break
-                    print(recent_appointment)
-                if scheduled_appointment.exists():
-                    return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
-                elif recent_flag:
-                    print(recent_flag, days_till_vaccination)
-                    return Response('vaccination cool down period, days till vaccination: %d' % days_till_vaccination, status=status.HTTP_307_TEMPORARY_REDIRECT)
-                else:
-                    self.perform_create(serializer)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response('Failure', status=status.HTTP_403_FORBIDDEN)
-        else:
-            return Response('Failure', status=status.HTTP_403_FORBIDDEN)
+	def create(self, request, *args, **kwargs):
+		serializer = self.get_serializer(data=request.data)
+		if serializer.is_valid(raise_exception=False):
+			user = self.request.user
+			if user.is_authenticated:
+				baby = serializer.validated_data['baby']
+				scheduled_appointment = Appointment.objects.filter(baby=baby, status='scheduled')
+				recent_appointments = Appointment.objects.filter(
+					Q(baby=baby, status='completed') | Q(baby=baby, status='partial')).order_by('-administered_on')
+				recent_flag = False
+				days_till_vaccination = 0
+				for recent_appointment in recent_appointments:
+					if recent_appointment.days_from_today() < 28:
+						recent_flag = True
+						days_till_vaccination = 28 - recent_appointment.days_from_today()
+						break
+					print(recent_appointment)
+				if scheduled_appointment.exists():
+					return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
+				elif recent_flag:
+					print(recent_flag, days_till_vaccination)
+					return Response('vaccination cool down period, days till vaccination: %d' % days_till_vaccination,
+									status=status.HTTP_307_TEMPORARY_REDIRECT)
+				else:
+					self.perform_create(serializer)
+					return Response(serializer.data, status=status.HTTP_201_CREATED)
+			else:
+				return Response('Failure', status=status.HTTP_403_FORBIDDEN)
+		else:
+			return Response('Failure', status=status.HTTP_403_FORBIDDEN)
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        if user.is_authenticated:
-            baby = serializer.validated_data['baby']
-            clinician = get_object_or_404(Clinitian, user=user)
-            serializer.save(administered_at=clinician.HealthCare)
+	def perform_create(self, serializer):
+		user = self.request.user
+		if user.is_authenticated:
+			baby = serializer.validated_data['baby']
+			clinician = get_object_or_404(Clinitian, user=user)
+			serializer.save(administered_at=clinician.HealthCare)
 
 
 class ClinitianViewset(viewsets.ModelViewSet):
-    """ClinitianViewset for REST Endpoint"""
-    serializer_class = ClinicianSerializer
-    permission_classes = (IsAuthenticated,)
+	"""ClinitianViewset for REST Endpoint"""
+	serializer_class = ClinicianSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            return Clinitian.objects.filter(user=user)
-        else:
-            return Clinitian.objects.none()
+	def get_queryset(self):
+		user = self.request.user
+		if user.is_authenticated:
+			return Clinitian.objects.filter(user=user)
+		else:
+			return Clinitian.objects.none()
 
 
 class NotificationViewset(viewsets.ModelViewSet):
-    """NotificationViewset for REST Endpoint"""
-    serializer_class = NotificationSerializer
-    permission_classes = (IsAuthenticated,)
+	"""NotificationViewset for REST Endpoint"""
+	serializer_class = NotificationSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        user = self.request.user
-        user = self.request.user
-        if user.is_authenticated:
-            parent = Parent.objects.filter(user=user)
-            return Notification.objects.filter(receiver=parent)
-        else:
-            return Notification.objects.none()
+	def get_queryset(self):
+		user = self.request.user
+		user = self.request.user
+		if user.is_authenticated:
+			parent = Parent.objects.filter(user=user)
+			return Notification.objects.filter(receiver=parent)
+		else:
+			return Notification.objects.none()
 
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        print(type(request.data.get("status")))
-        if request.data.get("status") == 'true':
-            instance.status = True
-            instance.save()
-        serializer = NotificationSerializer(instance=instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+	def update(self, request, *args, **kwargs):
+		instance = self.get_object()
+		print(type(request.data.get("status")))
+		if request.data.get("status") == 'true':
+			instance.status = True
+			instance.save()
+		serializer = NotificationSerializer(instance=instance)
+		return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 router = DefaultRouter()
