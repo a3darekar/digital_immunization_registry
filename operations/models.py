@@ -172,19 +172,33 @@ class Baby(models.Model):
 
 	def dosage_complete(self, *args, **kwargs):
 		vs = VaccineSchedule.objects.filter(baby=self, week=self.week).exclude(status='administered').first()
-		print("inside update function")
-		if vs is None:
-			if self.week == 24:
-				self.week = 36
-			if self.week == 14:
-				self.week = 24
-			if self.week == 10:
-				self.week = 14
-			if self.week == 6:
-				self.week = 10
-			if self.week == 0:
-				self.week = 6
-			super(Baby, self).save()
+		flag = True
+		while flag:
+			if vs is None:
+				if self.week == 24:
+					self.week = 36
+					flag = False
+				if self.week == 14:
+					flag = True
+					self.week = 24
+				else:
+					flag = False
+				if self.week == 10:
+					flag = True
+					self.week = 14
+				else:
+					flag = False
+				if self.week == 6:
+					flag = True
+					self.week = 10
+				else:
+					flag = False
+				if self.week == 0:
+					self.week = 6
+					flag = True
+				else:
+					flag = False
+		super(Baby, self).save()
 		return self
 
 
