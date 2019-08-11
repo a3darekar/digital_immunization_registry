@@ -75,11 +75,8 @@ def generatePdf(request, *args, **kwargs):
 	return render(request, 'pdf_form.html', context)
 
 
-# Create your views here.
 def index(request):
-	return HttpResponse(
-		"<h2>Error 403.</h2> You are not authorised to access this page. For further details, please contact Site "
-		"Administrator.")
+	return render(request, 'landing.html')
 
 
 @api_view(['POST'])

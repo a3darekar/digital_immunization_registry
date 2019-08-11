@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import djcelery
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -153,6 +154,10 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -177,16 +182,13 @@ SECURE_HSTS_PRELOAD = True
 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-
 BROKER_URL = 'redis://localhost:6379/1'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-#CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+# CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
-import djcelery
 djcelery.setup_loader()
-
 
 FCM_DJANGO_SETTINGS = {
 	"FCM_SERVER_KEY": os.environ["FCM_KEY"],

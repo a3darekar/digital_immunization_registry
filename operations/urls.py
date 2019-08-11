@@ -8,6 +8,5 @@ urlpatterns = [
 	url(r'api/schedule_vaccines/', schedule_vaccines),
 	url(r'api/users/', UserListView.as_view()),
 	url(r'^api/', include(router.urls)),
-	url(r'index/', index),
 	url(r'^$', index),
 ]
