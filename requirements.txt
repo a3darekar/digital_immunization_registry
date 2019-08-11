@@ -12,7 +12,6 @@ cryptography==2.3.1
 Django==1.11.15
 django-allauth==0.37.1
 django-celery==3.3.0
-django-celery-beat==1.5.0
 django-celery-results==1.1.2
 django-celerybeat-status==0.0.10
 django-cors-headers==2.4.0
@@ -30,6 +29,7 @@ kombu==4.6.3
 oauthlib==2.1.0
 phonenumberslite==8.9.13
 Pillow==5.4.1
+pkg-resources==0.0.0
 pycparser==2.19
 pyfcm==1.4.5
 PyJWT==1.6.4
