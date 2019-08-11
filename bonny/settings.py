@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 	'django.contrib.sites',
 	'celerybeat_status',
 	'djcelery',
+	'django_celery_beat',
 	'django_celery_results',
 
 	'operations',

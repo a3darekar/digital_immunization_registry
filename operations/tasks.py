@@ -15,7 +15,7 @@ def add(x=2, y=3):
     return x + y
 
 
-@periodic_task(run_every=(crontab(day_of_week='sunday', hour=5, minute=0)), name="NOTIFIER TASK", ignore_result=True)
+@periodic_task(run_every=(crontab(day_of_week='monday', hour=9, minute=0)), name="NOTIFIER TASK", ignore_result=True)
 def update_schedule():
 	###
 	# 1. retrieve objects
