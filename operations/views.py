@@ -250,12 +250,14 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 					Q(baby=baby, status='completed') | Q(baby=baby, status='partial')).order_by('-administered_on')
 				recent_flag = False
 				days_till_vaccination = 0
-				for recent_appointment in recent_appointments:
-					if recent_appointment.days_from_today() < 28:
-						recent_flag = True
-						days_till_vaccination = 28 - recent_appointment.days_from_today()
-						break
-					print(recent_appointment)
+				pending_vaccines = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+				if not pending_vaccines:
+					for recent_appointment in recent_appointments:
+						if recent_appointment.days_from_today() < 28:
+							recent_flag = True
+							days_till_vaccination = 28 - recent_appointment.days_from_today()
+							break
+						print(recent_appointment)
 				if scheduled_appointment.exists():
 					return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
 				elif recent_flag:
