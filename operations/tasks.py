@@ -10,7 +10,7 @@ from django.utils import timezone
 from .models import *
 
 
-@periodic_task(run_every=(crontab(ignore_result=True)), name="TEST")
+@periodic_task(run_every=(crontab()), name="TEST", ignore_result=True)
 def add(x, y):
     return x + y
 
