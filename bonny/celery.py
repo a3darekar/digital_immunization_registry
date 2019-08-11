@@ -1,4 +1,3 @@
-from __future__ import print_function
 from __future__ import absolute_import
 import os
 from celery import Celery
@@ -11,17 +10,9 @@ app = Celery('bonny')
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-
-app.conf.beat_schedule = {
-    'add-every-30-seconds': {
-        'task': 'print_hello',
-        'schedule': 30.0,
-        'args': (16, 16)
-    },
-}
+app.autodiscover_tasks()
 
 
-@app.task
-def print_hello():
-    print('hello there')
+@app.task(bind=True)
+def debug_task(self):
+    print('Request: {0!r}'.format(self.request))

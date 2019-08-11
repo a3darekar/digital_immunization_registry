@@ -9,8 +9,6 @@ from django.utils import timezone
 
 from .models import *
 
-logger = get_task_logger(__name__)
-
 
 @shared_task
 def add(x, y):
