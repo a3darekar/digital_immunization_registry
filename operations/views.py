@@ -250,22 +250,24 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 					Q(baby=baby, status='completed') | Q(baby=baby, status='partial')).order_by('-administered_on')
 				recent_flag = False
 				days_till_vaccination = 0
-				pending_vaccines = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+				pending_vaccines = VaccineSchedule.objects.filter(baby=baby, week=baby.week)
 				if not pending_vaccines:
 					for recent_appointment in recent_appointments:
 						if recent_appointment.days_from_today() < 28:
 							recent_flag = True
 							days_till_vaccination = 28 - recent_appointment.days_from_today()
 							break
-						print(recent_appointment)
 				if scheduled_appointment.exists():
+					print(scheduled_appointment)
 					return Response('Appointment Already Pending', status=status.HTTP_303_SEE_OTHER)
 				elif recent_flag:
 					print(recent_flag, days_till_vaccination)
 					return Response('vaccination cool down period, days till vaccination: %d' % days_till_vaccination,
 									status=status.HTTP_307_TEMPORARY_REDIRECT)
 				else:
+					print(serializer)
 					self.perform_create(serializer)
+					print(serializer.data)
 					return Response(serializer.data, status=status.HTTP_201_CREATED)
 			else:
 				return Response('Failure', status=status.HTTP_403_FORBIDDEN)
