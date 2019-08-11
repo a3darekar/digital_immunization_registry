@@ -11,7 +11,7 @@ from .models import *
 
 
 @periodic_task(run_every=(crontab()), name="TEST", ignore_result=True)
-def add(x, y):
+def add(x=2, y=3):
     return x + y
 
 
