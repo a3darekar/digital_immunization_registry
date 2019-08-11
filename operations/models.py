@@ -3,12 +3,16 @@ from __future__ import unicode_literals
 from datetime import datetime, timedelta
 
 import pytz
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
+from django.utils.timezone import make_aware
 from fcm_django.models import FCMDevice
 from phonenumber_field.modelfields import PhoneNumberField
 from .twilio_credentials import client
+# from datetime.utils.timzone import now
 
 from .choices import *
 
@@ -258,40 +262,53 @@ class VaccineRecord(models.Model):
 			if vaccine_schedule.status == 'scheduled':
 				vaccine_schedule.status = 'administered'
 				vaccine_schedule.save()
+				n = Notification(
+					baby = self.appointment.baby,
+					title="Vaccination Appointment Alert",
+					body="Vaccination Administered for vaccine %s" % self.vaccine,
+					receiver=self.appointment.baby.parent,
+					notif_type='success'
+				)
+				n.save()
+				print(n, 'dose check')
+				self.appointment.baby.dosage_complete()
 				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 				if vaccine_records.exists():
 					self.appointment.status = 'partial'
 				else:
 					self.appointment.status = 'completed'
 				self.appointment.save()
-				Notification(
-					title="Vaccination Appointment Alert",
-					body="Vaccination Administered for vaccine %s" % self.vaccine,
-					receiver=self.appointment.baby.parent,
-					notif_type='success'
-				).save()
+				self.appointment.baby.dosage_complete()
 		elif self.status == 'scheduled':
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status == 'pending':
 				vaccine_schedule.status = 'scheduled'
 				vaccine_schedule.save()
-			Notification(
+				self.appointment.baby.dosage_complete()
+			n = Notification(
+				baby = self.appointment.baby,
 				title="Vaccination Appointment Alert",
 				body="Vaccination appointment Scheduled for vaccine %s" % self.vaccine,
 				receiver=self.appointment.baby.parent,
 				notif_type='info'
-			).save()
+			)
+			n.save()
+			print(n.title)
 		else:
 			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
 			if vaccine_schedule.status == 'scheduled':
 				vaccine_schedule.status = 'pending'
 				vaccine_schedule.save()
-				Notification(
+				self.appointment.baby.dosage_complete()
+				n = Notification(
+					baby = self.appointment.baby,
 					title="Vaccination Appointment Alert",
 					body="Vaccination appointment Cancelled for vaccine %s" % self.vaccine,
 					receiver=self.appointment.baby.parent,
 					notif_type='error'
-				).save()
+				)
+				n.save()
+				print(n.title)
 				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 				if not vaccine_records.exists():
 					if self.appointment.status != 'partial':
@@ -301,6 +318,17 @@ class VaccineRecord(models.Model):
 					self.appointment.save()
 		self.appointment.baby.dosage_complete()
 		return self
+
+
+def now():
+	"""
+	Returns an aware or naive datetime.datetime, depending on settings.USE_TZ.
+    """
+	if settings.USE_TZ:
+		# timeit shows that datetime.now(tz=utc) is 24% slower
+		return timezone.make_aware(datetime.now())
+	else:
+		return datetime.now()
 
 
 class Notification(models.Model):
@@ -313,16 +341,18 @@ class Notification(models.Model):
 	body = models.CharField(max_length=300)
 	status = models.BooleanField('Status', default=False)
 	notif_type = models.CharField('Notification Type', max_length=40, choices=NotificationType, default='info')
-	notif_time = models.DateTimeField('Notification Time', default=datetime.now)
+	notif_time = models.DateTimeField('Notification Time', default=now)
 
 	class Meta:
 		verbose_name = 'Notification'
 		verbose_name_plural = 'Notifications'
 
 	def save(self, *args, **kwargs):
+		print('in notif')
+		self.notif_time = datetime.now()
 		if self.pk:
 			super(Notification, self).save()
 		else:
 			parent = self.receiver
-			# parent.notify(self.title, self.body, self.baby.text_notifications)
+			parent.notify(self.title, self.body, self.baby.text_notifications)
 			super(Notification, self).save()
