@@ -171,33 +171,27 @@ class Baby(models.Model):
 		return self
 
 	def dosage_complete(self, *args, **kwargs):
-		vs = VaccineSchedule.objects.filter(baby=self, week=self.week).exclude(status='administered').first()
-		flag = True
-		while flag:
+		while True:
+			vs = VaccineSchedule.objects.filter(baby=self, week=self.week).exclude(status='administered').first()
+			print(vs, self.week)
 			if vs is None:
-				if self.week == 24:
-					self.week = 36
-					flag = False
-				if self.week == 14:
-					flag = True
-					self.week = 24
-				else:
-					flag = False
-				if self.week == 10:
-					flag = True
-					self.week = 14
-				else:
-					flag = False
-				if self.week == 6:
-					flag = True
-					self.week = 10
-				else:
-					flag = False
 				if self.week == 0:
 					self.week = 6
-					flag = True
-				else:
-					flag = False
+					continue
+				if self.week == 6:
+					self.week = 10
+					continue
+				if self.week == 10:
+					self.week = 14
+					continue
+				if self.week == 14:
+					self.week = 24
+					continue
+				if self.week == 24:
+					self.week = 36
+			else:
+				break
+			print(self.week)
 		super(Baby, self).save()
 		return self
 
