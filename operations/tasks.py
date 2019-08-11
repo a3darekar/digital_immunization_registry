@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from celery import shared_task
 from celery.decorators import periodic_task
 from celery.task.schedules import crontab
 from celery.utils.log import get_task_logger
@@ -9,6 +10,11 @@ from django.utils import timezone
 from .models import *
 
 logger = get_task_logger(__name__)
+
+
+@shared_task
+def add(x, y):
+    return x + y
 
 
 @periodic_task(run_every=(crontab(day_of_week='sunday', hour=5, minute=0)), name="NOTIFIER TASK", ignore_result=True)

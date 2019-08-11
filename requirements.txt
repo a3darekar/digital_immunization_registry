@@ -1,9 +1,9 @@
-amqp==1.4.9
+amqp==2.5.0
 anyjson==0.3.3
 asn1crypto==0.24.0
 Babel==2.6.0
-billiard==3.3.0.23
-celery==3.1.26.post2
+billiard==3.6.0.0
+celery==4.3.0
 certifi==2018.8.24
 cffi==1.11.5
 chardet==3.0.4
@@ -12,10 +12,13 @@ cryptography==2.3.1
 Django==1.11.15
 django-allauth==0.37.1
 django-celery==3.3.0
+django-celery-beat==1.5.0
+django-celery-results==1.1.2
 django-celerybeat-status==0.0.10
 django-cors-headers==2.4.0
 django-phonenumber-field==2.0.0
 django-rest-auth==0.9.3
+django-timezone-field==3.0
 django-uuidfield==0.5.0
 djangorestframework==3.8.2
 enum34==1.1.6
@@ -23,7 +26,7 @@ fcm-django==0.2.19
 html5lib==1.0.1
 idna==2.7
 ipaddress==1.0.22
-kombu==3.0.37
+kombu==4.6.3
 oauthlib==2.1.0
 phonenumberslite==8.9.13
 Pillow==5.4.1
