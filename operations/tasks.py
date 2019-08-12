@@ -15,8 +15,8 @@ def add(x=2, y=3):
 	return x + y
 
 
-@periodic_task(run_every=(crontab()), name="Cancel all appointments", ignore_result=True)
-# @periodic_task(run_every=(crontab(minute=0, hour=0)), name="Cancel all appointments", ignore_result=True)
+# @periodic_task(run_every=(crontab()), name="Cancel all appointments", ignore_result=True)
+@periodic_task(run_every=(crontab(minute=0, hour=0)), name="Cancel all appointments", ignore_result=True)
 def cancel_appointments():
 	appointments = Appointment.objects.filter(Q(status='scheduled') | Q(status='partial'))
 	for appointment in appointments:
