@@ -32,8 +32,7 @@ class HealthCare(models.Model):
 
 class Parent(models.Model):
 	"""Parent credentials for login and contact"""
-	user = models.OneToOneField(User,
-								help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.")
+	user = models.OneToOneField(User, help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.")
 	email = models.EmailField('email address', unique=True)
 	first_name = models.CharField('first name', max_length=30, blank=True)
 	last_name = models.CharField('last name', max_length=30, blank=True)
@@ -136,9 +135,7 @@ class Baby(models.Model):
 	gender = models.CharField('Gender', max_length=10, choices=Gender)
 	birth_date = models.DateTimeField('Birth Date', default=datetime.now)
 	week = models.PositiveIntegerField(default=0)
-	special_notes = models.CharField('Special Notes', max_length=400,
-									 	help_text='Any Medical conditions such as allergies are to be mentioned here',
-									 	default="NA")
+	special_notes = models.CharField('Special Notes', max_length=400, help_text='Any Medical conditions such as allergies are to be mentioned here', default="NA")
 	text_notifications = models.BooleanField(default=True)
 
 	def __str__(self):
@@ -160,7 +157,6 @@ class Baby(models.Model):
 		return days / 7
 
 	def save(self, *args, **kwargs):
-		self.birth_date = datetime.now(pytz.timezone("Asia/Kolkata"))
 		if self.pk:
 			super(Baby, self).save()
 		else:
@@ -170,8 +166,7 @@ class Baby(models.Model):
 			for week, vaccine in vaccines.items():
 				my_dict = dict(vaccine)
 				for name, Name in my_dict.items():
-					v = VaccineSchedule(baby=self, vaccine=name, week=week,
-										tentative_date=self.birth_date + timedelta(week * 7), status='pending')
+					v = VaccineSchedule(baby=self, vaccine=name, week=week, tentative_date=self.birth_date + timedelta(week * 7), status='pending')
 					v.save()
 		return self
 
@@ -193,6 +188,9 @@ class Baby(models.Model):
 					continue
 				if self.week == 24:
 					self.week = 36
+					continue
+				if self.week == 36:
+					return
 			else:
 				break
 		super(Baby, self).save()
@@ -223,8 +221,7 @@ class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby = models.ForeignKey(Baby, related_name="vaccine_records")
 	status = models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
-	administered_on = models.DateTimeField(
-		default=datetime.now)
+	administered_on = models.DateTimeField(default=datetime.now)
 	administered_at = models.ForeignKey(HealthCare, related_name="phc")
 
 	class Meta:
@@ -249,7 +246,7 @@ names = dict(Vaccine_names)
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
 	appointment = models.ForeignKey(Appointment, related_name="Appointment")
-	vaccine = models.CharField(('Vaccine'), max_length=20, choices=Vaccinations)
+	vaccine = models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	status = models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
 
 	class Meta:
@@ -275,7 +272,6 @@ class VaccineRecord(models.Model):
 						receiver=self.appointment.baby.parent,
 						notif_type='success'
 					).save()
-					self.appointment.baby.dosage_complete()
 					vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
 					if vaccine_records.exists():
 						self.appointment.status = 'partial'
@@ -340,8 +336,7 @@ class Notification(models.Model):
 		self.notif_time = datetime.now(pytz.timezone("Asia/Kolkata"))
 		if not self.pk:
 			super(Notification, self).save()
-			# TODO : Uncomment before Push
-			# self.receiver.notify(self.title, self.body, self.baby.text_notifications)
+			self.receiver.notify(self.title, self.body, self.baby.text_notifications)
 		super(Notification, self).save()
 
 

@@ -53,7 +53,11 @@ INSTALLED_APPS = [
 	'rest_framework',
 	'rest_framework.authtoken',  # only if you use token authentication
 	'fcm_django',
+	# 'django_seed',
 ]
+
+# FAKER_LOCALE = None     # settings.LANGUAGE_CODE is loaded
+# FAKER_PROVIDERS = None  # faker.DEFAULT_PROVIDERS is loaded (all)
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -207,4 +211,3 @@ FCM_DJANGO_SETTINGS = {
 	# default: False
 	"DELETE_INACTIVE_DEVICES": True,
 }
-

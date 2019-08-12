@@ -40,7 +40,7 @@ class ClinitianAdmin(admin.ModelAdmin):
 	def name(self, obj):
 		return obj.get_full_name()
 
-	list_display = ('name', 'email', 'contact')
+	list_display = ('name', 'email', 'contact', 'HealthCare', 'user')
 
 
 class BabyAdmin(admin.ModelAdmin):
@@ -89,10 +89,13 @@ class AppointmentAdmin(admin.ModelAdmin):
 class VaccineRecordAdmin(admin.ModelAdmin):
 	"""docstring for VaccineRecordAdmin"""
 
-	def Appointment(self, obj):
-		return obj.appointment.pk
+	def Record_id(self, obj):
+		return unicode(self.baby(obj)) + " - " + names[obj.vaccine] + " - " + unicode(obj.appointment.pk)
 
-	list_display = ('Appointment', 'vaccine', 'status')
+	def baby(self, obj):
+		return obj.appointment.baby
+
+	list_display = ('Record_id',  'baby', 'vaccine', 'status')
 
 	list_filter = ('appointment', 'vaccine', 'status')
 
