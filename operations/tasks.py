@@ -12,10 +12,26 @@ from .models import *
 
 @periodic_task(run_every=(crontab()), name="TEST", ignore_result=True)
 def add(x=2, y=3):
-    return x + y
+	return x + y
 
 
-@periodic_task(run_every=(crontab(day_of_week='monday', hour=9, minute=0)), name="NOTIFIER TASK", ignore_result=True)
+@periodic_task(run_every=(crontab()), name="Cancel all appointments", ignore_result=True)
+# @periodic_task(run_every=(crontab(minute=0, hour=0)), name="Cancel all appointments", ignore_result=True)
+def cancel_appointments():
+	appointments = Appointment.objects.filter(Q(status='scheduled') | Q(status='partial'))
+	for appointment in appointments:
+		print(appointment)
+		vaccine_records = VaccineRecord.objects.filter(appointment=appointment)
+		for vaccine_record in vaccine_records:
+			print(vaccine_record.status)
+			if vaccine_record.status == 'scheduled':
+				vaccine_record.status = 'cancelled'
+				vaccine_record.save()
+	return 0
+
+
+@periodic_task(run_every=(crontab(day_of_week='monday', hour=9, minute=0)), name="Notify Parents", ignore_result=True)
+# @periodic_task(run_every=(crontab()), name="NOTIFIER TASK", ignore_result=True)
 def update_schedule():
 	###
 	# 1. retrieve objects
@@ -50,14 +66,16 @@ def update_schedule():
 				overdue_string = ', '.join(str(names[e]) for e in overdue)
 				body = "%s is past the due date for vaccination on %s for following vaccines of Week %s for following vaccines: %s." % (
 					baby.get_full_name(), obj.tentative_date.date(), baby.week, overdue_string)
-				Notification(title="Overdue Vaccination Alert!", body=body, receiver=baby.parent, notif_type='danger', baby=baby).save()
+				Notification(title="Overdue Vaccination Alert!", body=body, receiver=baby.parent, notif_type='danger',
+							 baby=baby).save()
 
 			elif flag1 is True:
 				upcoming_string = ', '.join(str(names[e]) for e in upcoming)
 				body = "%s is due for vaccination on %s for following vaccines of week %s  for following vaccines: %s." % (
 					baby.get_full_name(), obj.tentative_date.date(), baby.week, upcoming_string)
-				Notification(title="Upcoming Vaccination Alert!", body=body, receiver=baby.parent, notif_type='info', baby=baby).save()
+				Notification(title="Upcoming Vaccination Alert!", body=body, receiver=baby.parent, notif_type='info',
+							 baby=baby).save()
 
 		else:
-			return "incomplete"
-	return "completed"
+			return "Error"
+	return "Task Completed Successfully"

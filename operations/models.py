@@ -1,19 +1,17 @@
 from __future__ import unicode_literals
 
 from datetime import datetime, timedelta
-
 import pytz
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
-from django.utils.timezone import make_aware
+
 from fcm_django.models import FCMDevice
 from phonenumber_field.modelfields import PhoneNumberField
 from .twilio_credentials import client
-# from datetime.utils.timzone import now
-
 from .choices import *
 
 
@@ -45,7 +43,8 @@ class Parent(models.Model):
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
 
 	USERNAME_FIELD = 'user'
-	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', contact]
+	# REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'contact']
+	REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
 	class Meta:
 		verbose_name = 'parent'
@@ -73,13 +72,14 @@ class Parent(models.Model):
 		super(Parent, self).save()
 
 	def notify(self, title, body, text_notifications=False):
-		device = FCMDevice.objects.all()
+		device = FCMDevice.objects.filter(device_id=self.user.username)
 		if device:
 			device.send_message(title, body)
 		if text_notifications:
 			message = client.messages.create(
-				to="+918788957859",
+				to=self.contact,
 				from_="+13373074483",
+				# TODO: Change From No.
 				body="%s \n %s " % (title, body)
 			)
 
@@ -88,11 +88,11 @@ class Clinitian(models.Model):
 	"""Clinician access"""
 	user = models.OneToOneField(User,
 								help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.")
-	email = models.EmailField(('email address'), unique=True)
-	first_name = models.CharField(('first name'), max_length=30, blank=True)
-	last_name = models.CharField(('last name'), max_length=30, blank=True)
+	email = models.EmailField('Email Address', unique=True)
+	first_name = models.CharField('First Name', max_length=30, blank=True)
+	last_name = models.CharField('Last Name', max_length=30, blank=True)
 	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
-	unique_id = models.CharField(('Aadhaar ID'), max_length=13, validators=[
+	unique_id = models.CharField('Aadhaar ID', max_length=13, validators=[
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
 	HealthCare = models.ForeignKey(HealthCare)
 
@@ -126,19 +126,19 @@ class Clinitian(models.Model):
 
 class Baby(models.Model):
 	"""Basic Details of baby"""
-	first_name = models.CharField(('first name'), max_length=30)
-	last_name = models.CharField(('last name'), max_length=30)
+	first_name = models.CharField('First Name', max_length=30)
+	last_name = models.CharField('Last Name', max_length=30)
 	tag = models.CharField(max_length=20, unique=True)
 	parent = models.ForeignKey(Parent, related_name="baby")
-	place_of_birth = models.CharField(('Place of Birth'), max_length=120)
+	place_of_birth = models.CharField('Place of Birth', max_length=120)
 	weight = models.PositiveIntegerField(default=10)
 	blood_group = models.CharField('Blood Group', max_length=10, choices=BloodGroup)
 	gender = models.CharField('Gender', max_length=10, choices=Gender)
-	birth_date = models.DateTimeField(('Birth Date'), default=datetime.now)
+	birth_date = models.DateTimeField('Birth Date', default=datetime.now)
 	week = models.PositiveIntegerField(default=0)
-	special_notes = models.CharField(('Special Notes'), max_length=400,
-									 help_text='Any Medical conditions such as allergies are to be mentioned here',
-									 default="NA")
+	special_notes = models.CharField('Special Notes', max_length=400,
+									 	help_text='Any Medical conditions such as allergies are to be mentioned here',
+									 	default="NA")
 	text_notifications = models.BooleanField(default=True)
 
 	def __str__(self):
@@ -160,6 +160,7 @@ class Baby(models.Model):
 		return days / 7
 
 	def save(self, *args, **kwargs):
+		self.birth_date = datetime.now(pytz.timezone("Asia/Kolkata"))
 		if self.pk:
 			super(Baby, self).save()
 		else:
@@ -177,7 +178,6 @@ class Baby(models.Model):
 	def dosage_complete(self, *args, **kwargs):
 		while True:
 			vs = VaccineSchedule.objects.filter(baby=self, week=self.week).exclude(status='administered').first()
-			print(vs, self.week)
 			if vs is None:
 				if self.week == 0:
 					self.week = 6
@@ -195,7 +195,6 @@ class Baby(models.Model):
 					self.week = 36
 			else:
 				break
-			print(self.week)
 		super(Baby, self).save()
 		return self
 
@@ -224,7 +223,8 @@ class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
 	baby = models.ForeignKey(Baby, related_name="vaccine_records")
 	status = models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
-	administered_on = models.DateTimeField(default=datetime.now)
+	administered_on = models.DateTimeField(
+		default=datetime.now)
 	administered_at = models.ForeignKey(HealthCare, related_name="phc")
 
 	class Meta:
@@ -241,7 +241,9 @@ class Appointment(models.Model):
 		return (datetime.today().replace(tzinfo=pytz.UTC) - self.administered_on).days
 
 
+
 Vaccine_status = dict(Vaccine_Status)
+names = dict(Vaccine_names)
 
 
 class VaccineRecord(models.Model):
@@ -256,79 +258,66 @@ class VaccineRecord(models.Model):
 		verbose_name_plural = 'Vaccine Records'
 
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-		super(VaccineRecord, self).save()
-		if self.status == 'administered':
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
-			if vaccine_schedule.status == 'scheduled':
-				vaccine_schedule.status = 'administered'
-				vaccine_schedule.save()
-				n = Notification(
-					baby = self.appointment.baby,
-					title="Vaccination Appointment Alert",
-					body="Vaccination Administered for vaccine %s" % self.vaccine,
-					receiver=self.appointment.baby.parent,
-					notif_type='success'
-				)
-				n.save()
-				print(n, 'dose check')
-				self.appointment.baby.dosage_complete()
-				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
-				if vaccine_records.exists():
-					self.appointment.status = 'partial'
-				else:
-					self.appointment.status = 'completed'
-				self.appointment.save()
-				self.appointment.baby.dosage_complete()
-		elif self.status == 'scheduled':
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
-			if vaccine_schedule.status == 'pending':
-				vaccine_schedule.status = 'scheduled'
-				vaccine_schedule.save()
-				self.appointment.baby.dosage_complete()
-			n = Notification(
-				baby = self.appointment.baby,
-				title="Vaccination Appointment Alert",
-				body="Vaccination appointment Scheduled for vaccine %s" % self.vaccine,
-				receiver=self.appointment.baby.parent,
-				notif_type='info'
-			)
-			n.save()
-			print(n.title)
+		if not self.pk:
+			super(VaccineRecord, self).save()
+			vs = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).update(status='scheduled')
 		else:
-			vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
-			if vaccine_schedule.status == 'scheduled':
-				vaccine_schedule.status = 'pending'
-				vaccine_schedule.save()
-				self.appointment.baby.dosage_complete()
-				n = Notification(
-					baby = self.appointment.baby,
-					title="Vaccination Appointment Alert",
-					body="Vaccination appointment Cancelled for vaccine %s" % self.vaccine,
-					receiver=self.appointment.baby.parent,
-					notif_type='error'
-				)
-				n.save()
-				print(n.title)
-				vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
-				if not vaccine_records.exists():
-					if self.appointment.status != 'partial':
-						self.appointment.status = 'cancelled'
+			super(VaccineRecord, self).save()
+			if self.status == 'administered':
+				vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+				if vaccine_schedule.status == 'scheduled':
+					vaccine_schedule.status = 'administered'
+					vaccine_schedule.save()
+					Notification(
+						baby=self.appointment.baby,
+						title="Vaccination Appointment Alert!",
+						body="Vaccination Administered for vaccine:- %s" % names[self.vaccine],
+						receiver=self.appointment.baby.parent,
+						notif_type='success'
+					).save()
+					self.appointment.baby.dosage_complete()
+					vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
+					if vaccine_records.exists():
+						self.appointment.status = 'partial'
 					else:
 						self.appointment.status = 'completed'
 					self.appointment.save()
+					self.appointment.baby.dosage_complete()
+			elif self.status == 'scheduled':
+				vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+				if vaccine_schedule.status == 'pending':
+					vaccine_schedule.status = 'scheduled'
+					vaccine_schedule.save()
+					self.appointment.baby.dosage_complete()
+				Notification(
+					baby=self.appointment.baby,
+					title="Vaccination Appointment Alert!",
+					body="Vaccination appointment Scheduled for vaccine:- %s" % names[self.vaccine],
+					receiver=self.appointment.baby.parent,
+					notif_type='info'
+				).save()
+			else:
+				vaccine_schedule = VaccineSchedule.objects.filter(baby=self.appointment.baby, vaccine=self.vaccine).first()
+				if vaccine_schedule.status == 'scheduled':
+					vaccine_schedule.status = 'pending'
+					vaccine_schedule.save()
+					self.appointment.baby.dosage_complete()
+					Notification(
+						baby=self.appointment.baby,
+						title="Vaccination Appointment Alert!",
+						body="Vaccination appointment Cancelled for vaccine:- %s" % names[self.vaccine],
+						receiver=self.appointment.baby.parent,
+						notif_type='error'
+					).save()
+					vaccine_records = VaccineRecord.objects.filter(appointment=self.appointment, status='scheduled')
+					if not vaccine_records.exists():
+						if self.appointment.status != 'partial':
+							self.appointment.status = 'cancelled'
+						else:
+							self.appointment.status = 'completed'
+						self.appointment.save()
 		self.appointment.baby.dosage_complete()
 		return self
-
-
-def now():
-	"""
-	Returns an aware or naive datetime.datetime, depending on settings.USE_TZ.
-    """
-	if settings.USE_TZ:
-		# timeit shows that datetime.now(tz=utc) is 24% slower
-		return timezone.make_aware(datetime.now())
-	else:
-		return datetime.now()
 
 
 class Notification(models.Model):
@@ -341,18 +330,18 @@ class Notification(models.Model):
 	body = models.CharField(max_length=300)
 	status = models.BooleanField('Status', default=False)
 	notif_type = models.CharField('Notification Type', max_length=40, choices=NotificationType, default='info')
-	notif_time = models.DateTimeField('Notification Time', default=now)
+	notif_time = models.DateTimeField('Notification Time', default=datetime.now)
 
 	class Meta:
 		verbose_name = 'Notification'
 		verbose_name_plural = 'Notifications'
 
 	def save(self, *args, **kwargs):
-		print('in notif')
-		self.notif_time = datetime.now()
-		if self.pk:
+		self.notif_time = datetime.now(pytz.timezone("Asia/Kolkata"))
+		if not self.pk:
 			super(Notification, self).save()
-		else:
-			parent = self.receiver
-			parent.notify(self.title, self.body, self.baby.text_notifications)
-			super(Notification, self).save()
+			# TODO : Uncomment before Push
+			# self.receiver.notify(self.title, self.body, self.baby.text_notifications)
+		super(Notification, self).save()
+
+
