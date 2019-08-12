@@ -1,31 +1,22 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import pytz
-import json
-from django.http import HttpResponse, Http404
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.models import User
-from django.views.generic import View
-from django.db.models import Sum, Q
-from rest_framework.decorators import api_view
-from rest_framework.routers import DefaultRouter
-from rest_framework.response import Response
-from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
-from .models import *
-from .twilio_credentials import *
-from .choices import Vaccine_names, BloodGroup, Vaccine_Status
-from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, \
-	VaccineRecordSerializer, ClinicianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
-from fcm_django.models import FCMDevice
-from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
-from rest_framework import generics
-# PDF generation and Email backend imports
-
-from .utils import render_to_pdf
-from django.core.mail import EmailMessage
 
 from django import forms
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
+from rest_framework import generics
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
+
+from .models import *
+from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, \
+	VaccineRecordSerializer, ClinicianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
+from .utils import render_to_pdf
+# PDF generation and Email backend imports
 
 
 class PdfForm(forms.Form):
@@ -87,14 +78,9 @@ def schedule_vaccines(request):
 		if appointment:
 			vaccines = str(request.POST['vaccines'])
 			vaccines = vaccines.split(',')
-			vaccine_names = dict(Vaccine_names)
 			for vaccine in vaccines:
-				vaccine_record = VaccineRecord(appointment=appointment, vaccine=vaccine)
-				vaccine_record.save()
-				baby = vaccine_record.appointment.baby
-				schedule_record = VaccineSchedule.objects.filter(baby=baby, vaccine=vaccine).update(status='scheduled')
-			return HttpResponse(
-				"{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
+				VaccineRecord(appointment=appointment, vaccine=vaccine).save()
+			return HttpResponse("{\n  appointment : " + unicode(appointment) + ", \n  list :" + unicode(vaccines) + "\n}")
 		else:
 			return HttpResponse("No Appointment found")
 	else:
@@ -278,8 +264,8 @@ class AppointmentViewSet(viewsets.ModelViewSet):
 			serializer.save(administered_at=clinician.HealthCare)
 
 
-class ClinitianViewset(viewsets.ModelViewSet):
-	"""ClinitianViewset for REST Endpoint"""
+class ClinicianViewset(viewsets.ModelViewSet):
+	"""ClinicianViewset for REST Endpoint"""
 	serializer_class = ClinicianSerializer
 	permission_classes = (IsAuthenticated,)
 
@@ -317,7 +303,7 @@ class NotificationViewset(viewsets.ModelViewSet):
 
 router = DefaultRouter()
 
-router.register(r'phc_emp', ClinitianViewset, base_name='clinician-rest-details')
+router.register(r'phc_emp', ClinicianViewset, base_name='clinician-rest-details')
 
 router.register(r'healthcare', HealthCareViewSet, base_name='healthcare-list')
 
