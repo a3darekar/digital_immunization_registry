@@ -30,7 +30,7 @@ def cancel_appointments():
 	return 0
 
 
-@periodic_task(run_every=(crontab(day_of_week='monday', hour='10,22', minute=0)), name="Notify Parents", ignore_result=True)
+@periodic_task(run_every=(crontab(day_of_week='monday', hour=4, minute=0)), name="Notify Parents", ignore_result=True)
 # @periodic_task(run_every=(crontab()), name="NOTIFIER TASK", ignore_result=True)
 def update_schedule():
 	###
