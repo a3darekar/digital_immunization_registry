@@ -16,6 +16,8 @@ from .models import *
 from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerializer, VaccineScheduleSerializer, \
 	VaccineRecordSerializer, ClinicianSerializer, ParentSerializer, NotificationSerializer, UserSerializer
 from .utils import render_to_pdf
+
+
 # PDF generation and Email backend imports
 
 
@@ -115,15 +117,18 @@ class BabyViewset(viewsets.ModelViewSet):
 	def get_queryset(self):
 		user = self.request.user
 		parent = Parent.objects.filter(user=user)
+		clinician = Clinitian.objects.filter(user=user)
+		queryset = Baby.objects.none()
 		if parent:
-			return Baby.objects.filter(parent=parent)
-		queryset = Baby.objects.all()
-		search_param = self.request.query_params.get('search', None)
-		if search_param is not None:
-			parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(
-				email__contains=search_param))
-			queryset = Baby.objects.filter(Q(tag__contains=search_param) | Q(first_name__contains=search_param) | Q(
-				last_name__contains=search_param) | Q(parent=parent))
+			queryset = Baby.objects.filter(parent=parent)
+		if clinician or user.is_superuser:
+			queryset = Baby.objects.all()
+			search_param = self.request.query_params.get('search', None)
+			if search_param is not None:
+				parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(
+					email__contains=search_param))
+				queryset = Baby.objects.filter(Q(tag__contains=search_param) | Q(first_name__contains=search_param) | Q(
+					last_name__contains=search_param) | Q(parent=parent))
 		return queryset
 
 	def update(self, request, *args, **kwargs):
