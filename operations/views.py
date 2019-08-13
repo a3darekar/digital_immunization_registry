@@ -292,7 +292,7 @@ class NotificationViewset(viewsets.ModelViewSet):
 		user = self.request.user
 		if user.is_authenticated:
 			parent = Parent.objects.filter(user=user)
-			return Notification.objects.filter(receiver=parent)
+			return Notification.objects.filter(receiver=parent).order_by('-id')
 		else:
 			return Notification.objects.none()
 
