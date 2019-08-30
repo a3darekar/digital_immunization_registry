@@ -254,6 +254,9 @@ class VaccineRecord(models.Model):
 		verbose_name = 'Vaccine Record'
 		verbose_name_plural = 'Vaccine Records'
 
+	def baby(self):
+		return self.appointment.baby
+
 	def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
 		if not self.pk:
 			super(VaccineRecord, self).save()
