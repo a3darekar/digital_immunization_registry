@@ -18,6 +18,7 @@ django-celery-results==1.1.2
 django-celerybeat-status==0.0.10
 django-cors-headers==2.4.0
 django-filter==1.1.0
+django-pandas==0.6.1
 django-phonenumber-field==2.0.0
 django-rest-auth==0.9.3
 django-seed==0.1.9
@@ -27,15 +28,13 @@ djangorestframework==3.8.2
 enum34==1.1.6
 Faker==2.0.0
 fcm-django==0.2.19
-graphene==2.1.8
-graphene-django==2.5.0
-graphql-core==2.2.1
-graphql-relay==2.0.0
 html5lib==1.0.1
 idna==2.7
 ipaddress==1.0.22
 kombu==4.6.3
+numpy==1.16.5
 oauthlib==2.1.0
+pandas==0.24.2
 phonenumberslite==8.9.13
 Pillow==5.4.1
 promise==2.2.1
