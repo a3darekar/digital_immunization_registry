@@ -89,7 +89,7 @@ Vaccine_names = (
 	
 #	at birth
 	('bcg', 		'BCG'),
-	('opv', 		'OPV0'),
+	('opv', 		'OPV 0'),
 	('hepb1',		'HEP-B 1'),
 
 #	6 weeks
