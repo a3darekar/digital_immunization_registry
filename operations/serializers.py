@@ -4,7 +4,7 @@ from rest_framework import serializers, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from django.contrib.auth.models import User
-from choices import Vaccinations, Vaccine_names, Vaccine_Status
+from .choices import Vaccinations, Vaccine_names, Vaccine_Status
 from .models import Clinitian, Parent, Baby, VaccineSchedule, VaccineRecord, Appointment, HealthCare, Notification
 
 

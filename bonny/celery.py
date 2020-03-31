@@ -7,7 +7,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bonny.settings')
 app = Celery('bonny')
 
 app.config_from_object('django.conf:settings')
-app.autodiscover_tasks()
+app.autodiscover_tasks('operations')
 
 
 @app.task(bind=True)

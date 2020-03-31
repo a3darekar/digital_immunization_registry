@@ -32,7 +32,9 @@ class HealthCare(models.Model):
 
 class Parent(models.Model):
 	"""Parent credentials for login and contact"""
-	user = models.OneToOneField(User, help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.")
+	user = models.OneToOneField(User, null=True, 
+		help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.",
+		 on_delete=models.SET_NULL)
 	email = models.EmailField('email address', unique=True)
 	first_name = models.CharField('first name', max_length=30, blank=True)
 	last_name = models.CharField('last name', max_length=30, blank=True)
@@ -85,15 +87,16 @@ class Parent(models.Model):
 
 class Clinitian(models.Model):
 	"""Clinician access"""
-	user = models.OneToOneField(User,
-								help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.")
+	user = models.OneToOneField(User, null=True,
+								help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.",
+								on_delete=models.SET_NULL)
 	email = models.EmailField('Email Address', unique=True)
 	first_name = models.CharField('First Name', max_length=30, blank=True)
 	last_name = models.CharField('Last Name', max_length=30, blank=True)
 	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
 	unique_id = models.CharField('Aadhaar ID', max_length=13, validators=[
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
-	HealthCare = models.ForeignKey(HealthCare)
+	HealthCare = models.ForeignKey(HealthCare, on_delete=models.PROTECT)
 
 	USERNAME_FIELD = 'user'
 	REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'contact']
@@ -128,10 +131,10 @@ class Baby(models.Model):
 	first_name = models.CharField('First Name', max_length=30)
 	last_name = models.CharField('Last Name', max_length=30)
 	tag = models.CharField(max_length=20, unique=True)
-	parent = models.ForeignKey(Parent, related_name="baby")
+	parent = models.ForeignKey(Parent, related_name="baby", on_delete=models.PROTECT)
 	place_of_birth = models.CharField('Place of Birth', max_length=120)
 	weight = models.PositiveIntegerField(default=10)
-	blood_group = models.CharField('Blood Group', max_length=10, choices=BloodGroup)
+	blood_group = models.CharField('Blood Group', max_length=12, choices=BloodGroup)
 	gender = models.CharField('Gender', max_length=10, choices=Gender)
 	birth_date = models.DateTimeField('Birth Date', default=datetime.now)
 	week = models.PositiveIntegerField(default=0)
@@ -199,7 +202,7 @@ class Baby(models.Model):
 
 class VaccineSchedule(models.Model):
 	"""Schedule of Vaccines in to br Administered"""
-	baby = models.ForeignKey(Baby, related_name="vaccine_schedules")
+	baby = models.ForeignKey(Baby, related_name="vaccine_schedules", on_delete=models.CASCADE)
 	vaccine = models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	week = models.PositiveIntegerField(default=0)
 	tentative_date = models.DateTimeField(default=datetime.now)
@@ -219,10 +222,10 @@ class VaccineSchedule(models.Model):
 
 class Appointment(models.Model):
 	"""List of Vaccines that have been Administered"""
-	baby = models.ForeignKey(Baby, related_name="vaccine_records")
+	baby = models.ForeignKey(Baby, related_name="vaccine_records", on_delete=models.CASCADE)
 	status = models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
 	administered_on = models.DateTimeField(default=datetime.now)
-	administered_at = models.ForeignKey(HealthCare, related_name="phc")
+	administered_at = models.ForeignKey(HealthCare, null=True, related_name="phc", on_delete=models.SET_NULL)
 
 	class Meta:
 		verbose_name = 'Appointment'
@@ -245,7 +248,7 @@ names = dict(Vaccine_names)
 
 class VaccineRecord(models.Model):
 	"""docstring for VaccineRecord"""
-	appointment = models.ForeignKey(Appointment, related_name="Appointment")
+	appointment = models.ForeignKey(Appointment, related_name="Appointment", on_delete=models.CASCADE)
 	vaccine = models.CharField('Vaccine', max_length=20, choices=Vaccinations)
 	status = models.CharField('Vaccine Status', max_length=20, choices=vaccine_record_status, default='scheduled')
 
@@ -323,8 +326,8 @@ class Notification(models.Model):
 	"""
 	Description: FCM notification Model
 	"""
-	receiver = models.ForeignKey(Parent, related_name='Parent')
-	baby = models.ForeignKey(Baby, related_name='Baby')
+	receiver = models.ForeignKey(Parent, related_name='Parent', on_delete=models.CASCADE)
+	baby = models.ForeignKey(Baby, related_name='Baby', on_delete=models.CASCADE)
 	title = models.CharField(max_length=100)
 	body = models.CharField(max_length=300)
 	status = models.BooleanField('Status', default=False)

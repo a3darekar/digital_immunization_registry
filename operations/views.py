@@ -308,21 +308,21 @@ class NotificationViewset(viewsets.ModelViewSet):
 
 router = DefaultRouter()
 
-router.register(r'phc_emp', ClinicianViewset, base_name='clinician-rest-details')
+router.register(r'phc_emp', ClinicianViewset, basename='clinician-rest-details')
 
-router.register(r'healthcare', HealthCareViewSet, base_name='healthcare-list')
+router.register(r'healthcare', HealthCareViewSet, basename='healthcare-list')
 
-router.register(r'parent', ParentViewset, base_name='parent-rest')
+router.register(r'parent', ParentViewset, basename='parent-rest')
 
-router.register(r'babies', BabyViewset, base_name='babies-search-list')
+router.register(r'babies', BabyViewset, basename='babies-search-list')
 
-router.register(r'vaccinations', VaccineRecordViewset, base_name='vaccine-record-list')
+router.register(r'vaccinations', VaccineRecordViewset, basename='vaccine-record-list')
 
-router.register(r'appointments', AppointmentViewSet, base_name='appointment-list')
+router.register(r'appointments', AppointmentViewSet, basename='appointment-list')
 
-router.register(r'schedule', VaccineScheduleViewset, base_name='vaccine-schedule-list')
+router.register(r'schedule', VaccineScheduleViewset, basename='vaccine-schedule-list')
 
-router.register(r'notifications', NotificationViewset, base_name='notification-list')
+router.register(r'notifications', NotificationViewset, basename='notification-list')
 
 router.register(r'devices', FCMDeviceViewSet)
 
