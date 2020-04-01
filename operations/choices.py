@@ -2,7 +2,7 @@ Vaccinations = (
 	(0, (
 		#	at birth
 			('bcg', 		'BCG'),
-			('opv', 		'OPV0'),
+			('opv', 		'OPV 0'),
 			('hepb1',		'HEP-B 1'),
 		),
 	),

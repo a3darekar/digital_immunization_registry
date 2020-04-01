@@ -14,13 +14,15 @@ from phonenumber_field.modelfields import PhoneNumberField
 from .twilio_credentials import client
 from .choices import *
 
+def get_sentinel_user():
+    return get_user_model().objects.get_or_create(username='deleted')[0]
 
 class HealthCare(models.Model):
 	"""docstring for HealthCare"""
 	name = models.CharField(max_length=50)
 	address = models.CharField(max_length=140)
 	email = models.EmailField(unique=True)
-	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
+	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.", null=True)
 
 	class Meta:
 		verbose_name = 'Primary Health Care'
@@ -32,14 +34,14 @@ class HealthCare(models.Model):
 
 class Parent(models.Model):
 	"""Parent credentials for login and contact"""
-	user = models.OneToOneField(User, null=True, 
+	user = models.ForeignKey(User, 
 		help_text="Create a new user to add as a Parent or Guardian. This would be used as login credentials.",
-		 on_delete=models.SET_NULL)
+		 on_delete=models.CASCADE)
 	email = models.EmailField('email address', unique=True)
 	first_name = models.CharField('first name', max_length=30, blank=True)
 	last_name = models.CharField('last name', max_length=30, blank=True)
 	address = models.CharField(max_length=200)
-	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
+	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.", null=True)
 	unique_id = models.CharField('Aadhaar ID', max_length=13, validators=[
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
 
@@ -87,13 +89,13 @@ class Parent(models.Model):
 
 class Clinitian(models.Model):
 	"""Clinician access"""
-	user = models.OneToOneField(User, null=True,
+	user = models.ForeignKey(User,
 								help_text="Create a new user to add as a  Clinitian. This would be used as login credentials.",
-								on_delete=models.SET_NULL)
+								on_delete=models.SET(get_sentinel_user))
 	email = models.EmailField('Email Address', unique=True)
 	first_name = models.CharField('First Name', max_length=30, blank=True)
 	last_name = models.CharField('Last Name', max_length=30, blank=True)
-	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.")
+	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.", null=True)
 	unique_id = models.CharField('Aadhaar ID', max_length=13, validators=[
 		RegexValidator(regex='^.{12}$', message='Length has to be 12', code='nomatch')])
 	HealthCare = models.ForeignKey(HealthCare, on_delete=models.PROTECT)

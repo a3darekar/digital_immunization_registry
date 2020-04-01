@@ -18,6 +18,9 @@ from .serializers import HealthCareSerializer, AppointmentSerializer, BabySerial
 from .utils import render_to_pdf
 
 
+from django_pandas.io import read_frame
+import pandas as pd
+
 # PDF generation and Email backend imports
 
 
@@ -66,6 +69,25 @@ def generatePdf(request, *args, **kwargs):
 	form = PdfForm()
 	context = {'form': form, 'message': success}
 	return render(request, 'pdf_form.html', context)
+
+
+
+def dataframe(request):
+	vaccine_schedule = VaccineSchedule.objects.filter(status='administered')
+	df = read_frame(vaccine_schedule)
+	rs = df.groupby(['week'])['status'].agg('count')
+	print(rs.head())
+	categories = list(rs.index)
+	values = list(rs.values)
+
+	table_content = df.to_html(index=None)
+
+	table_content = table_content.replace("", "")
+	table_content = table_content.replace('class="dataframe"', "class='table table-striped'")
+	table_content = table_content.replace('border="1"', "")
+
+	context = {"categories": categories, 'values': values, 'table_data': table_content}
+	return render(request, 'dashboard.html', context=context)
 
 
 def index(request):
