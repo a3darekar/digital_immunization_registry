@@ -49,7 +49,7 @@ python-openid==2.2.5
 pytz==2018.5
 redis==3.3.6
 reportlab==3.5.13
-requests==2.19.1
+requests==2.20.0
 requests-oauthlib==1.0.0
 requests-toolbelt==0.8.0
 Rx==1.6.1
