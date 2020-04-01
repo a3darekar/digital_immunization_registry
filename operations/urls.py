@@ -6,7 +6,7 @@ from .views import index, schedule_vaccines, generatePdf, UserListView, datafram
 urlpatterns = [
 	url(r'^reports/', generatePdf, name='schedule_pdf'),
 	url(r'api/schedule_vaccines/', schedule_vaccines),
-	url(r'^api/v2/', dataframe),
+	url(r'^dashboard/', dataframe),
 	url(r'api/users/', UserListView.as_view()),
 	url(r'^api/', include(router.urls)),
 	url(r'^$', index),
