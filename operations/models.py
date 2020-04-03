@@ -78,13 +78,15 @@ class Parent(models.Model):
 		device = FCMDevice.objects.filter(device_id=self.user.username)
 		if device:
 			device.send_message(title, body)
-		if text_notifications:
-			message = client.messages.create(
-				to=self.contact,
-				from_="+13373074483",
-				# TODO: Change From No.
-				body="%s \n %s " % (title, body)
-			)
+
+		## TODO: Uncomment in deployment 
+		# if text_notifications:
+		# 	message = client.messages.create(
+		# 		to=self.contact,
+		# 		from_="+13373074483",
+		# 		# TODO: Change From No.
+		# 		body="%s \n %s " % (title, body)
+		# 	)
 
 
 class Clinitian(models.Model):
