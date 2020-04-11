@@ -1,216 +1,215 @@
 <!doctype html>
 <html lang="en">
-  <head>
-  <title>Big Analytics</title>
+	<head>
+	<title>Big Analytics</title>
 
-  <!-- Bootstrap core CSS -->
-  <link rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
-    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
-    crossorigin="anonymous">
-  </head>
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet"
+		href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+		integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+		crossorigin="anonymous">
+	</head>
 
-  <body>
+	<body>
 
-    <!-- Top Nav bar -->
-    <nav class="row navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" 
-      style="height: 58px" >
-     <a class="navbar-brand col-sm-3 col-md-2 mr-0" style="margin-left: 10px" href="#">Big Analytics</a>
-        <input class="form-control form-control-dark w-100"
-          type="text"
-          style="margin-top:  10px; margin-bottom: 10px" 
-          placeholder="Search"
-          aria-label="Search">
-      <ul class="navbar-nav px-3" style="margin-right: 10px">
-        <li class="nav-item text-nowrap">
-        <a class="nav-link" href="#">Sign out</a>
-      </li>
-    </ul>
-  </nav>
-  <!-- Top Nav bar end -->
-  <!-- Middle area -->
-  <div class="container-fluid" style="margin-top: 58px">
-    <div class="row">
-      <!-- Left pane -->
-      <div class="col-md-3">
-        <nav class="ld-none d-md-block bg-light sidebar" style="padding: 10px">
-          <div class="sidebar-sticky">
-            <a class="nav-link" href="#">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18"
-                  y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                  Reports
-              </a>
-            <div class="dropdown">
-              <button class="btn btn-secondary dropdown-toggle" type="button" id="  dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"   aria-expanded="false">
-                Week
-              </button>
-              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Month</a>
-                <a class="dropdown-item" href="#">Gender</a>
-              </div>
-            </div>
-            </div>
-        </nav>
-      </div>
-      <!-- Left pane end -->
-      <div class="col-md-9">
-        <ul class="nav nav-tabs md-tabs" id="myTabMD" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="week-tab" data-toggle="tab" href="#week-container" role="tab" aria-controls="week-container"
-            aria-selected="true">Week</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="region-tab" data-toggle="tab" href="#region_map_container" role="tab" aria-controls="region_map_container"
-            aria-selected="false">Region</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="dropout-tab" data-toggle="tab" href="#dropout_map_container" role="tab" aria-controls="dropout_map_container"
-            aria-selected="false">Dropout Rates</a>
-          </li>
-        </ul>
-        <div class="tab-content" id="myTabContentMD">
-          <div class="border tab-pane show active" style="min-width: 310px; height: 400px; margin: 0 auto"
-            id="week-container" role="tabpanel" aria-labelledby="week-tab">
-          </div>
-          <div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto"
-            id="region_map_container" role="tabpanel" aria-labelledby="region-tab">
-          </div>
-          <div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto" id="dropout_map_container" role="tabpanel" aria-labelledby="dropout-tab">
-          </div>
-        </div>
-        <h2 class="pt-4">Section Details</h2>
-          <p class="text-danger">
-            This table will be upated by Django objects, hence leaving it as it is.
-          </p>
-          <div class="table-responsive">
-              {{table_data|safe}}
-          </div>
-      </div>
-    </div>
-  </div>
-  <!-- Middle area end -->
-  <!-- Chartjs libraries -->
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script>
-      _categories = {{categories|safe}};
-      _values = {{values|safe}};
+		<!-- Top Nav bar -->
+		<nav class="row navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow" 
+			style="height: 58px" >
+		 <a class="navbar-brand col-sm-3 col-md-2 mr-0" style="margin-left: 10px" href="#">Big Analytics</a>
+				<input class="form-control form-control-dark w-100"
+					type="text"
+					style="margin-top:  10px; margin-bottom: 10px" 
+					placeholder="Search"
+					aria-label="Search">
+			<ul class="navbar-nav px-3" style="margin-right: 10px">
+				<li class="nav-item text-nowrap">
+				<a class="nav-link" href="#">Sign out</a>
+			</li>
+		</ul>
+	</nav>
+	<!-- Top Nav bar end -->
+	<!-- Middle area -->
+	<div class="container-fluid" style="margin-top: 58px">
+		<div class="row">
+			<!-- Left pane -->
+			<div class="col-md-3">
+				<nav class="ld-none d-md-block bg-light sidebar" style="padding: 10px">
+					<div class="sidebar-sticky">
+						<a class="nav-link" href="#">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+									viewBox="0 0 24 24" fill="none" stroke="currentColor"
+									stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bar-chart-2"><line x1="18" y1="20" x2="18"
+									y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+									Reports
+							</a>
+						<div class="dropdown">
+							<button class="btn btn-secondary dropdown-toggle" type="button" id="  dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"   aria-expanded="false">
+								Week
+							</button>
+							<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+								<a class="dropdown-item" href="#">Month</a>
+								<a class="dropdown-item" href="#">Gender</a>
+							</div>
+						</div>
+						</div>
+				</nav>
+			</div>
+			<!-- Left pane end -->
+			<div class="col-md-9">
+				<ul class="nav nav-tabs md-tabs" id="myTabMD" role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" id="week-tab" data-toggle="tab" href="#week-container" role="tab" aria-controls="week-container"
+						aria-selected="true">Week</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="region-tab" data-toggle="tab" href="#region_map_container" role="tab" aria-controls="region_map_container"
+						aria-selected="false">Region</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="dropout-tab" data-toggle="tab" href="#dropout_map_container" role="tab" aria-controls="dropout_map_container"
+						aria-selected="false">Dropout Rates</a>
+					</li>
+				</ul>
+				<div class="tab-content" id="myTabContentMD">
+					<div class="border tab-pane show active" style="min-width: 310px; height: 400px; margin: 0 auto"
+						id="week-container" role="tabpanel" aria-labelledby="week-tab">
+					</div>
+					<div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto"
+						id="region_map_container" role="tabpanel" aria-labelledby="region-tab">
+					</div>
+					<div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto" id="dropout_map_container" role="tabpanel" aria-labelledby="dropout-tab">
+					</div>
+				</div>
+				<h2 class="pt-4">Section Details</h2>
+					<p class="text-danger">
+						This table will be upated by Django objects, hence leaving it as it is.
+					</p>
+					<div class="table-responsive">
+							{{table_data|safe}}
+					</div>
+			</div>
+		</div>
+	</div>
+	<!-- Middle area end -->
+	<!-- Chartjs libraries -->
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+		<script src="https://code.highcharts.com/modules/export-data.js"></script>
+		<script>
+			_categories = {{categories|safe}};
+			_values = {{values|safe}};
 
-      Highcharts.chart('week-container', {
-    chart: {
-              type: 'column'
-    },
-    title: {
-              text: 'Total Vaccines administered'
-    },
-    subtitle: {
-              text: '(by week)'
-    },
-    xAxis: {
-              categories:_categories,
-              crosshair: true
-    },
-    yAxis: {
-              min: 0,
-              title: {
-      text: 'Vaccine Count'
-              }
-    },
-    tooltip: {
-              headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-              pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-      '<td style="padding:0"><b>{point.y}</b></td></tr>',
-              footerFormat: '</table>',
-              shared: true,
-              useHTML: true
-    },
-    plotOptions: {
-              column: {
-      pointPadding: 0.2,
-      borderWidth: 0
-        }
-    },
-    series: [{
-              name: 'Week #',
-              data: _values
+			Highcharts.chart('week-container', {
+				chart: {
+					type: 'column'
+				},
+				title: {
+					text: 'Total Vaccines administered'
+				},
+				subtitle: {
+					text: '(by week)'
+				},
+				xAxis: {
+					categories:_categories,
+					crosshair: true
+				},
+				yAxis: {
+					min: 0,
+					title: {
+						text: 'Adminsitered Vaccine Count'
+					}
+				},
+				tooltip: {
+					headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+					pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+						'<td style="padding:0"><b>{point.y}</b></td></tr>',
+					footerFormat: '</table>',
+					shared: true,
+					useHTML: true
+				},
+				plotOptions: {
+					column: {
+						pointPadding: 0.2,
+						borderWidth: 0
+					}
+				},
+				series: [{
+					name: 'Week #',
+					data: _values
+				}]
+			});
+		</script>
 
-    }]
-      });
-    </script>
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+			integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+			crossorigin="anonymous">    
+		</script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+			integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+			crossorigin="anonymous">
+		</script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+			integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+			crossorigin="anonymous">
+		</script>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous">    
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
-      integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
-      crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
-      integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
-      crossorigin="anonymous">
-    </script>
+		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script>
+		google.charts.load('current', { 'packages': ['map'] });
+		google.charts.setOnLoadCallback(drawMap);
 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script>
-    google.charts.load('current', { 'packages': ['map'] });
-    google.charts.setOnLoadCallback(drawMap);
+		function drawMap() {
+			var data = google.visualization.arrayToDataTable([
+				['Lat', 'Long', 'Name'],
+				[37.4232, -122.0853, 'Work'],
+				[37.4289, -122.1697, 'University'],
+				[37.6153, -122.3900, 'Airport'],
+				[37.4422, -122.1731, 'Shopping']
+			]);
 
-    function drawMap() {
-      var data = google.visualization.arrayToDataTable([
-        ['Lat', 'Long', 'Name'],
-        [37.4232, -122.0853, 'Work'],
-        [37.4289, -122.1697, 'University'],
-        [37.6153, -122.3900, 'Airport'],
-        [37.4422, -122.1731, 'Shopping']
-      ]);
+			var droupout_data = google.visualization.arrayToDataTable([
+				['Lat', 'Long', 'Name'],
+				[37.4232, -122.0853, 'Work'],
+				[37.4289, -122.1697, 'University'],
+				[37.6153, -122.3900, 'Airport'],
+				[37.4422, -122.1731, 'Shopping']
+			]);
 
-      var droupout_data = google.visualization.arrayToDataTable([
-        ['Lat', 'Long', 'Name'],
-        [37.4232, -122.0853, 'Work'],
-        [37.4289, -122.1697, 'University'],
-        [37.6153, -122.3900, 'Airport'],
-        [37.4422, -122.1731, 'Shopping']
-      ]);
+			var options = {
+						mapType: 'styledMap',
+						zoomLevel: 12,
+						showTooltip: true,
+						showInfoWindow: true,
+						useMapTypeControl: true,
+						maps: {
+							// Your custom mapTypeId holding custom map styles.
+							styledMap: {
+								name: 'Styled Map', // This name will be displayed in the map type control.
+								styles: [
+									{featureType: 'poi.attraction',
+									 stylers: [{color: '#fce8b2'}]
+									},
+									{featureType: 'road.highway',
+									 stylers: [{hue: '#0277bd'}, {saturation: -50}]
+									},
+									{featureType: 'road.highway',
+									 elementType: 'labels.icon',
+									 stylers: [{hue: '#000'}, {saturation: 100}, {lightness: 50}]
+									},
+									{featureType: 'landscape',
+									 stylers: [{hue: '#259b24'}, {saturation: 10}, {lightness: -22}]
+									}
+							]
+							}
+						}
+				};
 
-      var options = {
-            mapType: 'styledMap',
-            zoomLevel: 12,
-            showTooltip: true,
-            showInfoWindow: true,
-            useMapTypeControl: true,
-            maps: {
-              // Your custom mapTypeId holding custom map styles.
-              styledMap: {
-                name: 'Styled Map', // This name will be displayed in the map type control.
-                styles: [
-                  {featureType: 'poi.attraction',
-                   stylers: [{color: '#fce8b2'}]
-                  },
-                  {featureType: 'road.highway',
-                   stylers: [{hue: '#0277bd'}, {saturation: -50}]
-                  },
-                  {featureType: 'road.highway',
-                   elementType: 'labels.icon',
-                   stylers: [{hue: '#000'}, {saturation: 100}, {lightness: 50}]
-                  },
-                  {featureType: 'landscape',
-                   stylers: [{hue: '#259b24'}, {saturation: 10}, {lightness: -22}]
-                  }
-              ]
-              }
-            }
-        };
+			var region_map = new google.visualization.Map(document.getElementById('region_map_container'));
+			var dropout_map = new google.visualization.Map(document.getElementById('dropout_map_container'));
 
-      var region_map = new google.visualization.Map(document.getElementById('region_map_container'));
-      var dropout_map = new google.visualization.Map(document.getElementById('dropout_map_container'));
-
-      region_map.draw(data, options);
-      dropout_map.draw(droupout_data, options);
-    };
-  </script>
-  </body>
+			region_map.draw(data, options);
+			dropout_map.draw(droupout_data, options);
+		};
+	</script>
+	</body>
 </html>

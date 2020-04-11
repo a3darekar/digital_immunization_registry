@@ -5,6 +5,7 @@ import random
 seeder = Seed.seeder()
 
 seeder.add_entity(User, 50)
+seeder.add_entity(HealthCare, 2)
 seeder.add_entity(Clinitian, 10)
 
 seeder.add_entity(Parent, 40)
@@ -27,5 +28,5 @@ for baby in babies:
 	appointment.save()
 	appointment.refresh_from_db()
 	for v in vs:
-		vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine)
+		vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine, status='adminsitered')
 		vr.save()

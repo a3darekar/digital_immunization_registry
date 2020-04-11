@@ -76,7 +76,6 @@ def dataframe(request):
 	vaccine_schedule = VaccineSchedule.objects.filter(status='administered')
 	df = read_frame(vaccine_schedule)
 	rs = df.groupby(['week'])['status'].agg('count')
-	print(rs.head())
 	categories = list(rs.index)
 	values = list(rs.values)
 

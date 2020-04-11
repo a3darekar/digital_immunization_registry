@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 	'djcelery',
 	# 'django_celery_beat',
 	'django_celery_results',
+	'django_extensions',
 
 	'operations',
 	'profiles',
@@ -195,6 +196,8 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_PRELOAD = True
 
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 BROKER_URL = 'redis://localhost:6379/1'
 CELERY_ACCEPT_CONTENT = ['application/json']
