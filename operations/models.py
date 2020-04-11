@@ -23,6 +23,9 @@ class HealthCare(models.Model):
 	address = models.CharField(max_length=140)
 	email = models.EmailField(unique=True)
 	contact = PhoneNumberField(help_text="Please use the following format: <em>+91__________</em>.", null=True)
+	lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+	lng = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+	region = models.PositiveIntegerField(default=1)
 
 	class Meta:
 		verbose_name = 'Primary Health Care'

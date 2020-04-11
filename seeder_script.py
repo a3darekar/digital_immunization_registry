@@ -5,11 +5,10 @@ import random
 seeder = Seed.seeder()
 
 seeder.add_entity(User, 50)
-seeder.add_entity(HealthCare, 3)
-seeder.add_entity(Clinitian, 3)
+seeder.add_entity(Clinitian, 10)
 
-seeder.add_entity(Parent, 10)
-seeder.add_entity(Baby, 20, {'week': 0})
+seeder.add_entity(Parent, 40)
+seeder.add_entity(Baby, 100, {'week': 0})
 
 
 insertedpks = seeder.execute()
@@ -22,7 +21,8 @@ for baby in babies:
 	baby.dosage_complete()
 	baby.refresh_from_db()
 	vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=baby.week)
-	phc = HealthCare.objects.first()
+	phcs = HealthCare.objects.all()
+	phc = random.choice(phcs)
 	appointment = Appointment(baby=baby, administered_at=phc)
 	appointment.save()
 	appointment.refresh_from_db()

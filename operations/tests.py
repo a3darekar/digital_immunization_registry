@@ -26,16 +26,12 @@ class TestAppointmentStatuses(TestCase):
 			baby.vaccine_schedules.filter(week__lt=choice).update(status='administered')
 			baby.dosage_complete()
 			baby.refresh_from_db()
-			print(baby.week)
 			vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=baby.week)
-			print(vs)
 			phc = HealthCare.objects.first()
 			appointment = Appointment(baby=baby, administered_at=phc)
 			appointment.save()
 			appointment.refresh_from_db()
-			print(appointment.status)
 			for v in vs:
-				print(v.vaccine, v.status)
 				vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine)
 				vr.save()
 
@@ -56,9 +52,7 @@ class TestAppointmentStatuses(TestCase):
 			appointment.save()
 			vr = VaccineRecord(appointment=appointment, vaccine=vaccine)
 			vr.save()
-			print(vr.appointment.baby.vaccine_schedules.filter(vaccine=vaccine).first().status)
 			vs = VaccineSchedule.objects.get(pk=vs.pk)
-			print(vr.status, vaccine, vs.status)
 			assert vr.status == vs.status
 
 	def check_schedule_administered(self):
@@ -69,7 +63,6 @@ class TestAppointmentStatuses(TestCase):
 			vaccineRecord.save()
 			schedule_status = vaccineRecord.appointment.baby.vaccine_schedules.filter(vaccine=vaccineRecord.vaccine).first().status
 			assert schedule_status == 'administered'
-			print(vaccineRecord.appointment.status)
 			assert vaccineRecord.appointment.status == 'completed'
 
 	def check_schedule_cancelled(self):
@@ -79,7 +72,6 @@ class TestAppointmentStatuses(TestCase):
 			vaccineRecord.status = 'cancelled'
 			vaccineRecord.save()
 			schedule = vaccineRecord.appointment.baby.vaccine_schedules.filter(vaccine=vaccineRecord.vaccine).first()
-			print(vaccineRecord.status, vaccineRecord.appointment.status, schedule_status, schedule.status)
 			assert schedule.status == 'pending'
 			assert vaccineRecord.appointment.status == 'cancelled'
 
@@ -93,7 +85,6 @@ class TestAppointmentStatuses(TestCase):
 			first_vr.save()
 			appointment.refresh_from_db()
 			schedule = first_vr.appointment.baby.vaccine_schedules.filter(vaccine=first_vr.vaccine).first()
-			print(first_vr.status, appointment.status, appointment, schedule.status, counter)
 			assert schedule.status == 'administered'
 			assert appointment.status == 'scheduled' if counter > 1 else 'completed'
 
@@ -104,7 +95,6 @@ class TestAppointmentStatuses(TestCase):
 			vr = VaccineRecord.objects.filter(appointment=appointment).first()
 			vr.status='administered'
 			vr.save()
-			print(vr)
 			appointment.refresh_from_db()
 			assert appointment.status == 'partial'
 
@@ -113,7 +103,6 @@ class TestAppointmentStatuses(TestCase):
 		for appointment in appointments:
 			assert appointment.status == 'scheduled'
 			vrs = VaccineRecord.objects.filter(appointment=appointment)
-			print(vrs)
 			vr = vrs.first()
 			if vr:
 				vr.status = 'administered'
@@ -121,12 +110,10 @@ class TestAppointmentStatuses(TestCase):
 				appointment.refresh_from_db()
 				assert appointment.status == 'partial'
 				week = appointment.baby.week
-				print(week)
 				for vr in vrs:
 					vr.status = 'administered'
 					vr.save()
 					appointment.refresh_from_db()
-					print(vr.status, appointment.status)
 				assert appointment.status == 'completed'
 
 	def test_check_cancel_after_partial(self):
@@ -134,18 +121,15 @@ class TestAppointmentStatuses(TestCase):
 		for appointment in appointments:
 			assert appointment.status == 'scheduled'
 			vrs = VaccineRecord.objects.filter(appointment=appointment)
-			print(vrs)
 			vr = vrs.first()
 			vr.status = 'administered'
 			vr.save()
 			appointment.refresh_from_db()
 			assert appointment.status == 'partial'
 			week = appointment.baby.week
-			print(week)
 			for vr in vrs:
 				vr.status = 'cancelled'
 				vr.save()
 				appointment.refresh_from_db()
-				print(vr.status, appointment.status)
 			assert appointment.status == 'completed'
 
