@@ -79,13 +79,31 @@ def dataframe(request):
 	categories = list(rs.index)
 	values = list(rs.values)
 
-	table_content = df.to_html(index=None)
+	male_babies = Baby.objects.filter(gender='male')
+	male_vaccinations = VaccineSchedule.objects.filter(status='administered', baby__in=male_babies)
+	female_vaccinations = VaccineSchedule.objects.filter(status='administered').exclude(baby__in=male_babies)
+	df1 = read_frame(female_vaccinations)
+	df2 = read_frame(male_vaccinations)
+	rs1 = df1.groupby(['vaccine'])['status'].agg('count')
+	rs2 = df2.groupby(['vaccine'])['status'].agg('count')
+	gender_categories = ['male', 'female']
+	female_values = list(rs1.values)
+	print(rs2.values)
+	male_values = list(rs2.values)
 
-	table_content = table_content.replace("", "")
-	table_content = table_content.replace('class="dataframe"', "class='table table-striped'")
-	table_content = table_content.replace('border="1"', "")
+	regions = HealthCare.objects.order_by().values('region').distinct()
+	administered_vaccine = VaccineRecord.objects.filter(status='administered')
+	df = read_frame(administered_vaccine)
+	rs = df.groupby(['vaccine'])['status'].agg('count')
+	region_categories = list(rs.index)
+	region_values = list(rs.values)
+	print(region_categories)
 
-	context = {"categories": categories, 'values': values, 'table_data': table_content}
+	context = {
+		"categories": categories, 'values': values, 
+		"region_categories": region_categories, 'region_values': region_values,
+		"gender_categories": gender_categories, 'male_values': male_values, 'female_values': female_values
+	}
 	return render(request, 'dashboard.html', context=context)
 
 
@@ -137,8 +155,8 @@ class BabyViewset(viewsets.ModelViewSet):
 
 	def get_queryset(self):
 		user = self.request.user
-		parent = Parent.objects.filter(user=user)
-		clinician = Clinitian.objects.filter(user=user)
+		parent = Parent.objects.filter(user=user).first()
+		clinician = Clinitian.objects.filter(user=user).first()
 		queryset = Baby.objects.none()
 		if parent:
 			queryset = Baby.objects.filter(parent=parent)
@@ -147,7 +165,7 @@ class BabyViewset(viewsets.ModelViewSet):
 			search_param = self.request.query_params.get('search', None)
 			if search_param is not None:
 				parent = Parent.objects.filter(Q(contact__contains=search_param) | Q(unique_id__contains=search_param) | Q(
-					email__contains=search_param))
+					email__contains=search_param)).first()
 				queryset = Baby.objects.filter(Q(tag__contains=search_param) | Q(first_name__contains=search_param) | Q(
 					last_name__contains=search_param) | Q(parent=parent))
 		return queryset
@@ -225,8 +243,8 @@ class ParentViewset(viewsets.ModelViewSet):
 		user = self.request.user
 		pk = self.request.query_params.get('pk', None)
 		if pk is not None:
-			parent = Parent.objects.filter(user=pk)
-			if user.pk == parent[0].user.pk:
+			parent = Parent.objects.filter(user=pk).first()
+			if user.pk == parent.user.pk:
 				return parent
 		return Parent.objects.all()
 
@@ -312,7 +330,7 @@ class NotificationViewset(viewsets.ModelViewSet):
 		user = self.request.user
 		user = self.request.user
 		if user.is_authenticated:
-			parent = Parent.objects.filter(user=user)
+			parent = Parent.objects.filter(user=user).first()
 			return Notification.objects.filter(receiver=parent).order_by('-id')
 		else:
 			return Notification.objects.none()
