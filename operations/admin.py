@@ -2,7 +2,6 @@ from django.contrib import admin
 from .models import *
 from django import forms
 
-
 # Register your models here.
 
 
@@ -90,7 +89,7 @@ class VaccineRecordAdmin(admin.ModelAdmin):
 	"""docstring for VaccineRecordAdmin"""
 
 	def Record_id(self, obj):
-		return unicode(self.baby(obj)) + " - " + names[obj.vaccine] + " - " + unicode(obj.appointment.pk)
+		return str(self.baby(obj)) + " - " + names[obj.vaccine] + " - " + str(obj.appointment.pk)
 
 	def baby(self, obj):
 		return obj.appointment.baby

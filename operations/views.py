@@ -88,16 +88,29 @@ def dataframe(request):
 	rs2 = df2.groupby(['vaccine'])['status'].agg('count')
 	gender_categories = ['male', 'female']
 	female_values = list(rs1.values)
-	print(rs2.values)
 	male_values = list(rs2.values)
 
-	regions = HealthCare.objects.order_by().values('region').distinct()
-	administered_vaccine = VaccineRecord.objects.filter(status='administered')
-	df = read_frame(administered_vaccine)
-	rs = df.groupby(['vaccine'])['status'].agg('count')
-	region_categories = list(rs.index)
-	region_values = list(rs.values)
+	regions = HealthCare.objects.order_by().values_list('region', flat=True).distinct()
+
+	region_categories = list()
+	region_values = []
+	for region in regions:
+		phcs = HealthCare.objects.filter(region=region)
+		appointments = Appointment.objects.filter(administered_at__in=phcs)
+		vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments)
+		print(len(vaccineRecords))
+		df = read_frame(vaccineRecords)
+		results = df.groupby(['vaccine'])['status'].agg('count')
+		region_categories = list(results.index)
+		region_value = list(results.values)
+		region_values.append(region_value)
 	print(region_categories)
+
+	# administered_vaccines = VaccineRecord.objects.filter(status='administered').values('administered_at').annotate(vaccine=Sum('vaccine'))
+	# df = read_frame(administered_vaccines)
+	# rs = df.groupby(['vaccine'])['status'].agg('count')
+	# region_categories = list(rs.index)
+	# region_values = list(rs.values)
 
 	context = {
 		"categories": categories, 'values': values, 
