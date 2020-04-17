@@ -5,8 +5,10 @@ import json
 from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.core.serializers import serialize
+from django.db.models.functions import TruncMonth
+from django.db.models import Count
 
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework import generics
@@ -83,6 +85,20 @@ def dataframe(request):
 	categories = list(rs.index)
 	values = list(rs.values)
 
+	# vaccine_schedule = VaccineSchedule.objects.filter(status='administered').annotate(month=TruncMonth('tentative_date')).values('month').annotate(c=Count('id')).values('month', 'c')  
+	# df = read_frame(vaccine_schedule)
+
+	# babies = Baby.objects.all()
+	# dropped_out_babies = Baby.objects.filter(status='dropped_out')
+	# completed_babies = Baby.objects.filter(Q(status='completed'))
+	# df = read_frame(dropped_out_babies)
+	# rs = df.groupby(['week'])['status'].agg('count')
+	# drop_out_count_list = list(rs.values)
+	# drop_out_count_list.append(completed_babies.count())
+	# total_count = babies.count()
+	# drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
+	# print(drop_out_rate)
+
 	male_babies = Baby.objects.filter(gender='male')
 	male_vaccinations = VaccineSchedule.objects.filter(status='administered', baby__in=male_babies)
 	female_vaccinations = VaccineSchedule.objects.filter(status='administered').exclude(baby__in=male_babies)
@@ -108,20 +124,22 @@ def dataframe(request):
 		region_value = list(results.values)
 		region_values.append(region_value)
 
-	phcs = HealthCare.objects.values()
+	phcs = HealthCare.objects.all()
+	phc_values = list()
 	for phc in phcs:
-		appointments = Appointment.objects.filter(administered_at=phc['id'])
+		appointments = Appointment.objects.filter(administered_at=phc)
 		vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments)
 		df = read_frame(vaccineRecords)
 		results = df.groupby(['vaccine'])['status'].agg('count')
 		phc_categories = list(results.index)
-		phc_values = list(results.values)
-		phc.update(vaccines = phc_values)
+		phc_values.append({phc.id: list(results.values)})
+
+	phcs = serialize('json', phcs)
 
 	context = {
 		"categories": categories, 'values': values, 
 		"region_categories": region_categories, 'region_values': region_values,
-		"phc_categories": phc_categories, 'phcs': phcs,
+		"phc_categories": phc_categories, 'phcs': phcs, 'phc_data': phc_values,
 		"gender_categories": gender_categories, 'male_values': male_values, 'female_values': female_values
 	}
 	return render(request, 'dashboard.html', context=context)
@@ -357,7 +375,6 @@ class NotificationViewset(viewsets.ModelViewSet):
 
 	def update(self, request, *args, **kwargs):
 		instance = self.get_object()
-		print(type(request.data.get("status")))
 		if request.data.get("status") == 'true':
 			instance.status = True
 			instance.save()
