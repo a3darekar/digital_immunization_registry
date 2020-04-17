@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Count
+from django.core.serializers import serialize
+
 from fcm_django.api.rest_framework import FCMDeviceViewSet, FCMDeviceAuthorizedViewSet
 from rest_framework import generics
 from rest_framework import status, viewsets
@@ -98,23 +102,26 @@ def dataframe(request):
 		phcs = HealthCare.objects.filter(region=region)
 		appointments = Appointment.objects.filter(administered_at__in=phcs)
 		vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments)
-		print(len(vaccineRecords))
 		df = read_frame(vaccineRecords)
 		results = df.groupby(['vaccine'])['status'].agg('count')
 		region_categories = list(results.index)
 		region_value = list(results.values)
 		region_values.append(region_value)
-	print(region_categories)
 
-	# administered_vaccines = VaccineRecord.objects.filter(status='administered').values('administered_at').annotate(vaccine=Sum('vaccine'))
-	# df = read_frame(administered_vaccines)
-	# rs = df.groupby(['vaccine'])['status'].agg('count')
-	# region_categories = list(rs.index)
-	# region_values = list(rs.values)
+	phcs = HealthCare.objects.values()
+	for phc in phcs:
+		appointments = Appointment.objects.filter(administered_at=phc['id'])
+		vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments)
+		df = read_frame(vaccineRecords)
+		results = df.groupby(['vaccine'])['status'].agg('count')
+		phc_categories = list(results.index)
+		phc_values = list(results.values)
+		phc.update(vaccines = phc_values)
 
 	context = {
 		"categories": categories, 'values': values, 
 		"region_categories": region_categories, 'region_values': region_values,
+		"phc_categories": phc_categories, 'phcs': phcs,
 		"gender_categories": gender_categories, 'male_values': male_values, 'female_values': female_values
 	}
 	return render(request, 'dashboard.html', context=context)
