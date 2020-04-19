@@ -7,17 +7,20 @@ seeder = Seed.seeder()
 seeder.add_entity(User, 10)
 
 seeder.add_entity(Parent, 40)
-seeder.add_entity(Baby, 100, {'week': 0})
+seeder.add_entity(Baby, 100, {'week': 0, 'status':'ongoing'})
 
 
 insertedpks = seeder.execute()
 
 babies = Baby.objects.all()
-list = [0, 6, 10, 14, 24, 36]
+list = [0, 6, 10, 14, 24, 36, 40]
 for baby in babies:
 	choice = random.choice(list)
 	baby.vaccine_schedules.filter(week__lt=choice).update(status='administered')
 	baby.dosage_complete()
+	if baby.week < 36:
+		baby.status = 'dropped_out'
+		baby.save()
 	baby.refresh_from_db()
 	vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=baby.week)
 	phcs = HealthCare.objects.all()

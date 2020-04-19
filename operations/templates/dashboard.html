@@ -4,13 +4,21 @@
 {% endblock %}
 
 {% block content %}
-	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.3.6/proj4.js"></script>
+	<script src="https://code.highcharts.com/maps/highmaps.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+	<script src="https://code.highcharts.com/mapdata/custom/europe.js"></script>
+	<script src="https://code.highcharts.com/mapdata/countries/in/in-all.js"></script>
+	<script src="https://code.highcharts.com/mapdata/custom/world-continents.js"></script>
+	<script src="https://code.highcharts.com/modules/marker-clusters.js"></script>
+	<script src="https://code.highcharts.com/modules/coloraxis.js"></script>
+	<script src="https://d3js.org/d3.v5.min.js"></script>
 
 	<!-- Middle area -->
-	<div class="container-fluid" style="margin-top: 58px">
+	<div class="container-fluid" style="margin-top: 10px">
 		<div class="row">
 			<!-- Left pane -->
-			<div class="col-md-3"  style="padding: 10px;">
+			<!-- <div class="col-md-3"  style="padding: 10px;">
 				<nav class="ld-none d-md-block bg-light sidebar" style="padding: 10px">
 					<div class="sidebar-sticky">
 						<a class="nav-link" href="#">
@@ -31,38 +39,45 @@
 						</div>
 					</div>
 				</nav>
-			</div>
+			</div> -->
 			<!-- Left pane end -->
-			<div class="col-md-9" style="padding: 10px;">
-				<ul class="nav nav-tabs md-tabs" id="myTabMD" role="tablist">
-					<li class="nav-item">
-						<a class="nav-link active" id="week-tab" data-toggle="tab" href="#week-container" role="tab" aria-controls="week-container"
-						aria-selected="true">Week</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" id="region-tab" data-toggle="tab" href="#region_map_container" role="tab" aria-controls="region_map_container"
-						aria-selected="false">Region</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" id="dropout-tab" data-toggle="tab" href="#dropout_map_container" role="tab" aria-controls="dropout_map_container"
-						aria-selected="false">Dropout Rates</a>
-					</li>
-				</ul>
-				
-
-				{{ gender_categories }}
-				{{ male_values }}
-				{{ female_values }}
-
-				
-				<div class="tab-content" id="myTabContentMD">
-					<div class="border tab-pane show active" style="min-width: 310px; height: 400px; margin: 0 auto"
-						id="week-container" role="tabpanel" aria-labelledby="week-tab"></div>
-					<div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto"
-						id="region_map_container" role="tabpanel" aria-labelledby="region-tab">
+			<div class="col-md-12" style="padding: 10px;">
+				<div id="vaccine-container" class="justify-content-center align-self-center">
+					<div class="row justify-content-center align-self-center">
+						<div class="col-md-7" style="min-width: 310px; height: 400px; margin: 5px auto"
+							id="week-container" ></div>
+						<div class="col-md-5">
+							<div class="card text-white bg-dark mb-3" style="margin: 70px auto; max-width: 24rem">
+								<div class="card-header">Baby Age (in weeks) against Vaccines Administered</div>
+									<div class="card-body">
+										<p class="card-text">This vertical bar chart describes drop out rate, where the X-axis represents the week number of a vaccine and the Y-axis tells us about the rate of babies enrolled into the system that have successfully finished administration of vaccines at those particular milestones. This helps in the determination of vaccine drop-out rate.</p>
+								</div>
+							</div>
+						</div>
 					</div>
-					<div class="border tab-pane" style="min-width: 310px; height: 400px; margin: 0 auto" id="dropout_map_container" role="tabpanel" aria-labelledby="dropout-tab">
+					<div class="row">
+						<div class="col-md-5">
+							<div class="card text-white bg-dark mb-3" style="margin: 70px auto; max-width: 24rem">
+								<div class="card-header">Gender against Vaccines Distribution</div>
+									<div class="card-body">
+										<p class="card-text">This horizontal bar graph represents all vaccines present in the schedule and its total coverage across both genders, male and female. It denotes the percentage of males and females who have successfully completed the particular vaccine administration. We intend to show a comparative study between both genders. </p>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-7" style="min-width: 310px; height: 400px; margin: 5px auto" id="gender-container" ></div>
 					</div>
+				</div>
+				<div style="min-width: 310px; height: 600px; margin: 0 auto" id="region_map_container">
+				</div>
+				<div class="card text-white bg-dark mb-3" style="margin: 70px auto; max-width: 48rem">
+								<div class="card-header">India PHC Specific Vaccine Administration Stats</div>
+									<div class="card-body">
+										<p class="card-text">
+					This map shows various PHCs present across the country. When a particular PHC is selected, it shows the number of vaccines administered at each PHC across the country.
+					The government can use this map to identify the areas where there are no PHCs. It can establish new PHCs in those areas and take special efforts to encourage people to follow immunization.
+					The PHC specific vaccine stats can be used to identify states/cities where vaccination cases are less in number. Government can arrange awareness campaigns in those states/cities.
+										</p>
+									</div>
 				</div>
 			</div>
 		</div>
@@ -115,70 +130,109 @@
 					data: _values
 				}]
 			});
-		</script>
 
+			_phc_data = {{phc_data|safe}};
+			_phcs = {{phcs|safe}};
+			_labels = {{ labels|safe }};
+			phcLatLong = new Array();
+
+			_colors=[];
+			var nColors=24;
+			f=d3.interpolateHsl('red', 'blue');
+			for (var i=0; i<nColors; i++)
+				_colors.push(f(i/(nColors-1)));
+
+			for(var i = 0; i < _phcs.length; i++){
+				var newPhc = new Object();
+				newPhc.name = _phcs[i].fields.name;
+				newPhc.lat = _phcs[i].fields.lat;
+				newPhc.lon = _phcs[i].fields.lng;
+				newPhc.vaccines = _labels;
+				newPhc.values = _phc_data[i];
+				newPhc.key = i+1;
+				phcLatLong.push(newPhc);
+			}
+			Highcharts.mapChart('region_map_container', {
+					chart: {
+						map: 'countries/in/in-all'
+					},
+					title: {
+						text: 'India PHC Specific Vaccine Administration Stats'
+					},
+					mapNavigation: {
+						enabled: true
+					},
+					enableMouseWheelZoom: {
+						enabled: false
+					},
+					series: [{
+						// Use the gb-all map with no data as a basemap
+						name: 'Basemap',
+						borderColor: '#A0A0A0',
+						nullColor: 'rgba(200, 200, 200, 0.3)',
+						showInLegend: false
+					}, /*{
+						name: 'Separators',
+						type: 'mapline',
+						nullColor: '#707070',
+						showInLegend: true,
+						enableMouseTracking: true
+					}, */
+					{
+						// Specify points using lat/lon
+						type: 'mappoint',
+						color: Highcharts.getOptions().colors[1],
+						data: phcLatLong,
+						tooltip: {
+							useHTML: true,
+							pointFormatter: function() {
+								var currentPhc = phcLatLong[this.series.data.indexOf(this)];
+								var str = "<b>" + currentPhc.name + "</b>";
+								str += "<b>Vaccines Adminsitered</b><br>";
+								for(var i=0;i<currentPhc.vaccines.length;i++)
+									if (currentPhc.values[currentPhc.key][i] != null)
+										str += "<br><span style='color: " + _colors[i] + ";'>\u25CF</span><b> " + currentPhc.vaccines[i] + ":</b> " + currentPhc.values[currentPhc.key][i];
+								return str;
+							}
+						},
+						showInLegend: false
+					}]
+				});
+		</script>
+		<script>
+			_gender_categories = {{ gender_categories|safe }};
+			_labels = {{ labels|safe }};
+			_male_values = {{ male_values|safe }};
+			_female_values = {{ female_values|safe }};
+			Highcharts.chart('gender-container', {
+				chart: {
+					type: 'bar'
+				},
+				title: {
+					text: 'Gender vs Vaccine Distribution'
+				},
+				xAxis: {
+					categories: _labels
+				},
+				yAxis: {
+					title: {
+						text: 'Vaccines Adminsitered'
+					}
+				},
+				series: [{
+					name: 'Male',
+					data: _male_values
+				}, {
+					name: 'Female',
+					data: _female_values
+				}]
+			});
+		</script>
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
 			integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
 			crossorigin="anonymous">    
 		</script>
 	
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	<script>
-		google.charts.load('current', { 'packages': ['map'] });
-		google.charts.setOnLoadCallback(drawMap);
 
-		function drawMap() {
-			var data = google.visualization.arrayToDataTable([
-				['Lat', 'Long', 'Name'],
-				[37.4232, -122.0853, 'Work'],
-				[37.4289, -122.1697, 'University'],
-				[37.6153, -122.3900, 'Airport'],
-				[37.4422, -122.1731, 'Shopping']
-			]);
-
-			var droupout_data = google.visualization.arrayToDataTable([
-				['Lat', 'Long', 'Name'],
-				[37.4232, -122.0853, 'Work'],
-				[37.4289, -122.1697, 'University'],
-				[37.6153, -122.3900, 'Airport'],
-				[37.4422, -122.1731, 'Shopping']
-			]);
-
-			var options = {
-						mapType: 'styledMap',
-						zoomLevel: 12,
-						showTooltip: true,
-						showInfoWindow: true,
-						useMapTypeControl: true,
-						maps: {
-							// Your custom mapTypeId holding custom map styles.
-							styledMap: {
-								name: 'Styled Map', // This name will be displayed in the map type control.
-								styles: [
-									{featureType: 'poi.attraction',
-									 stylers: [{color: '#fce8b2'}]
-									},
-									{featureType: 'road.highway',
-									 stylers: [{hue: '#0277bd'}, {saturation: -50}]
-									},
-									{featureType: 'road.highway',
-									 elementType: 'labels.icon',
-									 stylers: [{hue: '#000'}, {saturation: 100}, {lightness: 50}]
-									},
-									{featureType: 'landscape',
-									 stylers: [{hue: '#259b24'}, {saturation: 10}, {lightness: -22}]
-									}
-							]
-							}
-						}
-				};
-
-			var region_map = new google.visualization.Map(document.getElementById('region_map_container'));
-			var dropout_map = new google.visualization.Map(document.getElementById('dropout_map_container'));
-
-			region_map.draw(data, options);
-			dropout_map.draw(droupout_data, options);
-		};
-	</script>
-	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 {% endblock %}

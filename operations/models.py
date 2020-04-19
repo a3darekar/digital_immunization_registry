@@ -147,6 +147,7 @@ class Baby(models.Model):
 	week = models.PositiveIntegerField(default=0)
 	special_notes = models.CharField('Special Notes', max_length=400, help_text='Any Medical conditions such as allergies are to be mentioned here', default="NA")
 	text_notifications = models.BooleanField(default=True)
+	status = models.CharField('vaccination_status', max_length=20, null=True, choices=BabyStatus)
 
 	def __str__(self):
 		return self.get_full_name()
@@ -171,6 +172,7 @@ class Baby(models.Model):
 			super(Baby, self).save()
 		else:
 			super(Baby, self).save()
+			self.status = 'ongoing'
 			# Add Vaccine with the tentative date
 			vaccines = dict(Vaccinations)
 			for week, vaccine in vaccines.items():
@@ -200,6 +202,8 @@ class Baby(models.Model):
 					self.week = 36
 					continue
 				if self.week == 36:
+					self.status = 'completed'
+					super(Baby, self).save()
 					return
 			else:
 				break

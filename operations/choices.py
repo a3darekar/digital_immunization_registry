@@ -125,3 +125,10 @@ NotificationType = (
 	('error', 'error'),
 	('danger', 'danger'),
 )
+
+BabyStatus = (
+	('ongoing', 'Ongoing'),
+	('late', 'Late'),
+	('dropped_out', 'Dropped Out'),
+	('completed', 'Completed'),
+)

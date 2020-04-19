@@ -84,20 +84,23 @@ def dataframe(request):
 	rs = df.groupby(['week'])['status'].agg('count')
 	categories = list(rs.index)
 	values = list(rs.values)
+	denominator = [3, 6, 5, 5, 2, 2]
+	for i in range(len(values)):
+		values[i] = values[i]/denominator[i]
 
 	# vaccine_schedule = VaccineSchedule.objects.filter(status='administered').annotate(month=TruncMonth('tentative_date')).values('month').annotate(c=Count('id')).values('month', 'c')  
 	# df = read_frame(vaccine_schedule)
 
-	# babies = Baby.objects.all()
-	# dropped_out_babies = Baby.objects.filter(status='dropped_out')
-	# completed_babies = Baby.objects.filter(Q(status='completed'))
-	# df = read_frame(dropped_out_babies)
-	# rs = df.groupby(['week'])['status'].agg('count')
-	# drop_out_count_list = list(rs.values)
-	# drop_out_count_list.append(completed_babies.count())
-	# total_count = babies.count()
-	# drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
-	# print(drop_out_rate)
+	babies = Baby.objects.all()
+	dropped_out_babies = Baby.objects.filter(status='dropped_out')
+	completed_babies = Baby.objects.filter(Q(status='completed'))
+	df = read_frame(dropped_out_babies)
+	rs = df.groupby(['week'])['status'].agg('count')
+	drop_out_count_list = list(rs.values)
+	drop_out_count_list.append(completed_babies.count())
+	total_count = babies.count()
+	drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
+	print(drop_out_rate)
 
 	male_babies = Baby.objects.filter(gender='male')
 	male_vaccinations = VaccineSchedule.objects.filter(status='administered', baby__in=male_babies)
@@ -106,6 +109,7 @@ def dataframe(request):
 	df2 = read_frame(male_vaccinations)
 	rs1 = df1.groupby(['vaccine'])['status'].agg('count')
 	rs2 = df2.groupby(['vaccine'])['status'].agg('count')
+	labels = list(rs1.index) 
 	gender_categories = ['male', 'female']
 	female_values = list(rs1.values)
 	male_values = list(rs2.values)
@@ -137,10 +141,11 @@ def dataframe(request):
 	phcs = serialize('json', phcs)
 
 	context = {
-		"categories": categories, 'values': values, 
-		"region_categories": region_categories, 'region_values': region_values,
-		"phc_categories": phc_categories, 'phcs': phcs, 'phc_data': phc_values,
-		"gender_categories": gender_categories, 'male_values': male_values, 'female_values': female_values
+		'categories': categories, 'values': values, 
+		'region_categories': region_categories, 'region_values': region_values,
+		'phc_categories': phc_categories, 'phcs': phcs, 'phc_data': phc_values,
+		'gender_categories': gender_categories, 'labels': labels,
+		'male_values': male_values, 'female_values': female_values
 	}
 	return render(request, 'dashboard.html', context=context)
 
