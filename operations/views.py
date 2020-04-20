@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import json
+import json, pickle, joblib
+
 from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -28,7 +29,20 @@ from django_pandas.io import read_frame
 import pandas as pd
 
 # PDF generation and Email backend imports
-
+def get_rate_array(rate=100):
+	# 'dtp3_lt_50', 'dtp3_50-79', 'dtp3_gt_80', 'dtp3_gt_95', 'dtp3_gt_90',
+	array= [0, 0, 0, 0, 0]
+	if rate < 50:
+		array[0] = 100
+	elif rate < 79:
+		array[1] = 100
+	elif rate < 90:
+		array[2] = 100
+	elif rate < 95:
+		array[4] = 100
+	else:
+		array[3] = 100
+	return array
 
 class PdfForm(forms.Form):
 	tag = forms.CharField(help_text="enter tag")
@@ -93,7 +107,7 @@ def dataframe(request):
 
 	babies = Baby.objects.all()
 	dropped_out_babies = Baby.objects.filter(status='dropped_out')
-	completed_babies = Baby.objects.filter(Q(status='completed'))
+	completed_babies = Baby.objects.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
 	df = read_frame(dropped_out_babies)
 	rs = df.groupby(['week'])['status'].agg('count')
 	drop_out_count_list = list(rs.values)
@@ -140,12 +154,43 @@ def dataframe(request):
 
 	phcs = serialize('json', phcs)
 
+	# Prediction
+	import os
+	scaler = joblib.load("ml_models/min_max_scaler.save")
+	pca = joblib.load("ml_models/pca_model.save")
+	bacterial_rate_pedictor = pickle.load(open("ml_models/bacterial_rate_model.save", "rb"))
+	vitamin_a_pedictor = pickle.load(open("ml_models/vitamin_a_model.save", "rb"))
+	pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
+	pcv2_rate = pcv1_rate + drop_out_rate[2]
+	dtp3_rate = pcv2_rate + drop_out_rate[3]
+	dtp1_dtp3_drop = dtp3_rate - pcv1_rate
+	dtp_drop_gt_10 = (0 if dtp1_dtp3_drop < 10 else 100)
+	pcv1_pcv2_drop = pcv2_rate - pcv1_rate
+	pcv1_rate = get_rate_array(pcv1_rate)
+	pcv2_rate = get_rate_array(pcv2_rate)
+	dtp3_rate = get_rate_array(dtp3_rate)
+
+	prediction_input = [
+		[1, 100, 
+		dtp3_rate[0], dtp3_rate[1], dtp3_rate[2], dtp3_rate[3], dtp3_rate[4], 0,
+		pcv1_rate[0], pcv1_rate[1], pcv1_rate[2], pcv1_rate[3], pcv1_rate[4], 0,
+		pcv2_rate[0], pcv2_rate[1], pcv2_rate[2], pcv2_rate[3], pcv2_rate[4], 0,
+		dtp_drop_gt_10, dtp1_dtp3_drop, 0, pcv1_pcv2_drop,
+		True, True, True, True, True]
+	]
+
+	scaled_data = scaler.transform(prediction_input)
+	components = pca.transform(scaled_data)
+	vitamin_a_pediction = vitamin_a_pedictor.predict(components)
+	bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
+
 	context = {
 		'categories': categories, 'values': values, 
 		'region_categories': region_categories, 'region_values': region_values,
 		'phc_categories': phc_categories, 'phcs': phcs, 'phc_data': phc_values,
 		'gender_categories': gender_categories, 'labels': labels,
-		'male_values': male_values, 'female_values': female_values
+		'male_values': male_values, 'female_values': female_values,
+		'vitamin_a_pediction': vitamin_a_pediction, 'bacterial_rate_pediction': bacterial_rate_pediction
 	}
 	return render(request, 'dashboard.html', context=context)
 

@@ -3,3 +3,4 @@ bonny/local_settings.py
 *.sqlite3
 celerybeat-schedule
 /static
+**/*.ipynb_checkpoints/

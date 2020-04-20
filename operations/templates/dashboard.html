@@ -187,7 +187,7 @@
 							useHTML: true,
 							pointFormatter: function() {
 								var currentPhc = phcLatLong[this.series.data.indexOf(this)];
-								var str = "<b>" + currentPhc.name + "</b>";
+								var str = "<b>" + currentPhc.name + "</b><br>";
 								str += "<b>Vaccines Adminsitered</b><br>";
 								for(var i=0;i<currentPhc.vaccines.length;i++)
 									if (currentPhc.values[currentPhc.key][i] != null)
