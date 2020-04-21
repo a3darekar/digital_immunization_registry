@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import json, pickle, joblib
-
+import json, pickle, joblib, os
 from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -105,17 +104,6 @@ def dataframe(request):
 	# vaccine_schedule = VaccineSchedule.objects.filter(status='administered').annotate(month=TruncMonth('tentative_date')).values('month').annotate(c=Count('id')).values('month', 'c')  
 	# df = read_frame(vaccine_schedule)
 
-	babies = Baby.objects.all()
-	dropped_out_babies = Baby.objects.filter(status='dropped_out')
-	completed_babies = Baby.objects.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
-	df = read_frame(dropped_out_babies)
-	rs = df.groupby(['week'])['status'].agg('count')
-	drop_out_count_list = list(rs.values)
-	drop_out_count_list.append(completed_babies.count())
-	total_count = babies.count()
-	drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
-	print(drop_out_rate)
-
 	male_babies = Baby.objects.filter(gender='male')
 	male_vaccinations = VaccineSchedule.objects.filter(status='administered', baby__in=male_babies)
 	female_vaccinations = VaccineSchedule.objects.filter(status='administered').exclude(baby__in=male_babies)
@@ -154,8 +142,28 @@ def dataframe(request):
 
 	phcs = serialize('json', phcs)
 
-	# Prediction
-	import os
+	context = {
+		'categories': categories, 'values': values, 
+		'region_categories': region_categories, 'region_values': region_values,
+		'phc_categories': phc_categories, 'phcs': phcs, 'phc_data': phc_values,
+		'gender_categories': gender_categories, 'labels': labels,
+		'male_values': male_values, 'female_values': female_values,
+	}
+	return render(request, 'dashboard.html', context=context)
+
+def prediction(request):
+
+	babies = Baby.objects.all()
+	dropped_out_babies = Baby.objects.filter(status='dropped_out')
+	completed_babies = Baby.objects.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
+	df = read_frame(dropped_out_babies)
+	rs = df.groupby(['week'])['status'].agg('count')
+	drop_out_count_list = list(rs.values)
+	drop_out_count_list.append(completed_babies.count())
+	total_count = babies.count()
+	drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
+	print(drop_out_rate)
+
 	scaler = joblib.load("ml_models/min_max_scaler.save")
 	pca = joblib.load("ml_models/pca_model.save")
 	bacterial_rate_pedictor = pickle.load(open("ml_models/bacterial_rate_model.save", "rb"))
@@ -185,15 +193,9 @@ def dataframe(request):
 	bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
 
 	context = {
-		'categories': categories, 'values': values, 
-		'region_categories': region_categories, 'region_values': region_values,
-		'phc_categories': phc_categories, 'phcs': phcs, 'phc_data': phc_values,
-		'gender_categories': gender_categories, 'labels': labels,
-		'male_values': male_values, 'female_values': female_values,
 		'vitamin_a_pediction': vitamin_a_pediction, 'bacterial_rate_pediction': bacterial_rate_pediction
 	}
-	return render(request, 'dashboard.html', context=context)
-
+	return render(request, 'prediction.html', context=context)	
 
 def index(request):
 	return render(request, 'landing.html')
