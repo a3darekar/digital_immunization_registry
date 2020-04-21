@@ -1,138 +1,138 @@
 <!DOCTYPE HTML>
 <html lang="en">
-    <head>
-        <title>Vaccination Report</title>
-        <style type="text/css">
-            body {
-                font-weight: 200;
-                font-size: 14px;
-            }
-            .header {
-                font-size: 20px;
-                font-weight: 100;
-                text-align: center;
-                color: #007cae;
-            }
-            .title {
-                font-size: 32px;
-                font-weight: 100;
-               /* text-align: right;*/
-               padding: 10px 20px 0px 20px;  
-            }
-            .title span {
-                color: #007cae;
-            }
-            .details {
-                padding: 10px 0 0 40px;
-                float: left;
-                text-align: left !important;
-                /*margin-left: 40%;*/
-            }
-            .details-left {
-                padding: 10px 10px 0px 900px;
-                align-self: right !important;
-                /*margin-left: 40%;*/
-            }
-            .hrItem {
-                border: none;
-                height: 2px;
-                /* Set the hr color */
-                color: #333; /* old IE */
-                background-color: #fff; /* Modern Browsers */
-            }
-            .Pending{
-                color: red;
-            }
-            .Scheduled{
-                color: yellow;
-            }
-            .Administered{
-                color: green;
-            }
-        </style>
-        <style>
+	<head>
+		<title>Vaccination Report</title>
+		<style type="text/css">
+			body {
+				font-weight: 200;
+				font-size: 14px;
+			}
+			.header {
+				font-size: 20px;
+				font-weight: 100;
+				text-align: center;
+				color: #007cae;
+			}
+			.title {
+				font-size: 32px;
+				font-weight: 100;
+				/* text-align: right;*/
+				padding: 10px 20px 0px 20px;  
+			}
+			.title span {
+				color: #007cae;
+			}
+			.details {
+				padding: 10px 0 0 40px;
+				float: left;
+				text-align: left !important;
+				/*margin-left: 40%;*/
+			}
+			.details-left {
+				padding: 10px 10px 0px 900px;
+				align-self: right !important;
+				/*margin-left: 40%;*/
+			}
+			.hrItem {
+				border: none;
+				height: 2px;
+				/* Set the hr color */
+				color: #333; /* old IE */
+				background-color: #fff; /* Modern Browsers */
+			}
+			.Pending{
+				color: red;
+			}
+			.Scheduled{
+				color: yellow;
+			}
+			.Administered{
+				color: green;
+			}
+		</style>
+		<style>
 
-        </style>
+		</style>
 
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-        <div class='wrapper'>
-            <div class='header'>
-                <h1 class="title">Vaccination Report</h1>
-            </div>
-        <div>
-        <div class='details'>
-            <span>
-                <b>Name: </b>{{ baby }}
-            </span> <br />
-            <span>
-                <b>Blood Group: </b>{{ baby.blood_group }}                                 
-            </span> <br />
-            <span>
-                <b>Birth Date: </b>{{ baby.birth_date }}
-            </span> <br />
-            <span>
-                <b>Unique ID (tag): </b>{{ baby.tag }}
-            </span> <br />
-            <hr class='hrItem' />
-        </div>
-        <div class="details-left">
-            <span>
-                <b><i>Parent Details:</i></b>
-            </span> <br/>
-            <span>
-                <b>Name: </b>{{ baby.parent }}
-            </span>                                                             <br/>
-            <span>
-                <b>Email: </b>{{ baby.parent.email }}
-            </span>                                                             <br/>
-            <span>
-                <b>Contact: </b>{{ baby.parent.contact }}
-            </span>                                                             <br/>
-        </div>
-        <span  style="text-align: center;">
-            <b>Special Notes:</b> {{ baby.special_notes }}
-        </span>
-        {% if schedule %}
-        {% regroup schedule by week as grouped_list %}
-        <table class="table table-striped" style="text-align: center;">
-            {% for vaccine_group in grouped_list|dictsort:"grouper"  %}
-            <thead class="thead-dark">
-                <tr>
-                    <th colspan="4" style="text-align: center;">Week : {{ vaccine_group.grouper }}</th>
-                </tr>
-                <tr>
-                    <th>ID</th>
-                    <th>Vaccine</th>
-                    {% if vaccine_group > baby.week %}
-                    <th>Tentative Date</th>
-                    {% else %}
-                    <th>Administered Date</th>
-                    {% endif %}
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for vaccine in vaccine_group.list  %}
-                <tr class="{{vaccine.status}}">
-                    <td>{{forloop.counter}}</td>
-                    <td>{{vaccine.vaccine}}</td>
-                    <td>{{vaccine.tentative_date|date:"D, d M, Y"}}</td>
-                    <td>{{vaccine.status}}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <h4>Report generated on
-         {{ today }}
-        </h4>
-            <hr class='hrItem' />
-        {% else %}
-        <h3>Error with request</h3>
-        <p>Could not find the Schedule in database. Please check your details or contact administrator/nearest PHC.</p>
-        {% endif %}
-    </div>
-    </body>
+		<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+	</head>
+	<body>
+		<div class='wrapper'>
+			<div class='header'>
+				<h1 class="title">Vaccination Report</h1>
+			</div>
+		<div>
+		<div class='details'>
+			<span>
+				<b>Name: </b>{{ baby }}
+			</span> <br />
+			<span>
+				<b>Blood Group: </b>{{ baby.blood_group }}
+			</span> <br />
+			<span>
+				<b>Birth Date: </b>{{ baby.birth_date }}
+			</span> <br />
+			<span>
+				<b>Unique ID (tag): </b>{{ baby.tag }}
+			</span> <br />
+			<hr class='hrItem' />
+		</div>
+		<div class="details-left">
+			<span>
+				<b><i>Parent Details:</i></b>
+			</span> <br/>
+			<span>
+				<b>Name: </b>{{ baby.parent }}
+			</span>                                                             <br/>
+			<span>
+				<b>Email: </b>{{ baby.parent.email }}
+			</span>                                                             <br/>
+			<span>
+				<b>Contact: </b>{{ baby.parent.contact }}
+			</span>                                                             <br/>
+		</div>
+		<span  style="text-align: center;">
+			<b>Special Notes:</b> {{ baby.special_notes }}
+		</span>
+		{% if schedule %}
+		{% regroup schedule by week as grouped_list %}
+		<table class="table table-striped" style="text-align: center;">
+			{% for vaccine_group in grouped_list|dictsort:"grouper"  %}
+			<thead class="thead-dark">
+				<tr>
+					<th colspan="4" style="text-align: center;">Week : {{ vaccine_group.grouper }}</th>
+				</tr>
+				<tr>
+					<th>ID</th>
+					<th>Vaccine</th>
+					{% if vaccine_group > baby.week %}
+					<th>Tentative Date</th>
+					{% else %}
+					<th>Administered Date</th>
+					{% endif %}
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for vaccine in vaccine_group.list  %}
+				<tr class="{{vaccine.status}}">
+					<td>{{forloop.counter}}</td>
+					<td>{{vaccine.vaccine}}</td>
+					<td>{{vaccine.tentative_date|date:"D, d M, Y"}}</td>
+					<td>{{vaccine.status}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+		<h4>Report generated on
+		 {{ today }}
+		</h4>
+			<hr class='hrItem' />
+		{% else %}
+		<h3>Error with request</h3>
+		<p>Could not find the Schedule in database. Please check your details or contact administrator/nearest PHC.</p>
+		{% endif %}
+	</div>
+	</body>
 </html>

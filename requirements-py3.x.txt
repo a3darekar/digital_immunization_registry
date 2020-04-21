@@ -58,7 +58,6 @@ pexpect==4.8.0
 phonenumberslite==8.12.1
 pickleshare==0.7.5
 Pillow==7.1.1
-pkg-resources==0.0.0
 prometheus-client==0.7.1
 prompt-toolkit==3.0.5
 ptyprocess==0.6.0
