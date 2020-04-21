@@ -168,6 +168,7 @@ def prediction(request):
 	pca = joblib.load("ml_models/pca_model.save")
 	bacterial_rate_pedictor = pickle.load(open("ml_models/bacterial_rate_model.save", "rb"))
 	vitamin_a_pedictor = pickle.load(open("ml_models/vitamin_a_model.save", "rb"))
+
 	pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
 	pcv2_rate = pcv1_rate + drop_out_rate[2]
 	dtp3_rate = pcv2_rate + drop_out_rate[3]
@@ -192,8 +193,15 @@ def prediction(request):
 	vitamin_a_pediction = vitamin_a_pedictor.predict(components)
 	bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
 
+	vitamin_dict = pickle.load(open("ml_models/vitamin_dict.save", "rb"))
+	bacterial_dict = pickle.load(open("ml_models/bacterial_dict.save", "rb"))
+
+
 	context = {
-		'vitamin_a_pediction': vitamin_a_pediction, 'bacterial_rate_pediction': bacterial_rate_pediction
+		'vitamin_a_pediction': vitamin_a_pediction,
+		'bacterial_rate_pediction': bacterial_rate_pediction,
+		'vitamin_dict': vitamin_dict,
+		'bacterial_dict': bacterial_dict
 	}
 	return render(request, 'prediction.html', context=context)	
 
