@@ -153,55 +153,76 @@ def dataframe(request):
 
 def prediction(request):
 
-	babies = Baby.objects.all()
-	dropped_out_babies = Baby.objects.filter(status='dropped_out')
-	completed_babies = Baby.objects.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
-	df = read_frame(dropped_out_babies)
-	rs = df.groupby(['week'])['status'].agg('count')
-	drop_out_count_list = list(rs.values)
-	drop_out_count_list.append(completed_babies.count())
-	total_count = babies.count()
-	drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
-	print(drop_out_rate)
-
 	scaler = joblib.load("ml_models/min_max_scaler.save")
 	pca = joblib.load("ml_models/pca_model.save")
 	bacterial_rate_pedictor = pickle.load(open("ml_models/bacterial_rate_model.save", "rb"))
 	vitamin_a_pedictor = pickle.load(open("ml_models/vitamin_a_model.save", "rb"))
 
-	pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
-	pcv2_rate = pcv1_rate + drop_out_rate[2]
-	dtp3_rate = pcv2_rate + drop_out_rate[3]
-	dtp1_dtp3_drop = dtp3_rate - pcv1_rate
-	dtp_drop_gt_10 = (0 if dtp1_dtp3_drop < 10 else 100)
-	pcv1_pcv2_drop = pcv2_rate - pcv1_rate
-	pcv1_rate = get_rate_array(pcv1_rate)
-	pcv2_rate = get_rate_array(pcv2_rate)
-	dtp3_rate = get_rate_array(dtp3_rate)
+	region_list = list()
 
-	prediction_input = [
-		[1, 100, 
-		dtp3_rate[0], dtp3_rate[1], dtp3_rate[2], dtp3_rate[3], dtp3_rate[4], 0,
-		pcv1_rate[0], pcv1_rate[1], pcv1_rate[2], pcv1_rate[3], pcv1_rate[4], 0,
-		pcv2_rate[0], pcv2_rate[1], pcv2_rate[2], pcv2_rate[3], pcv2_rate[4], 0,
-		dtp_drop_gt_10, dtp1_dtp3_drop, 0, pcv1_pcv2_drop,
-		True, True, True, True, True]
-	]
+	regions = HealthCare.objects.order_by().values_list('region', flat=True).distinct()
 
-	scaled_data = scaler.transform(prediction_input)
-	components = pca.transform(scaled_data)
-	vitamin_a_pediction = vitamin_a_pedictor.predict(components)
-	bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
+	for region in regions:
+		phcs = HealthCare.objects.filter(region=region)
+		appointments = Appointment.objects.filter(administered_at__in=phcs)
+		baby_ids = list()
+		vaccine_0_list = ['bcg', 'opv', 'hepb1']
+		for appointment in appointments:
+			vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments, vaccine__in=vaccine_0_list)
+			if vaccineRecords:
+				baby_ids.append(appointment.baby.id)
+		babies = Baby.objects.filter(id__in = baby_ids)
+		dropped_out_babies = babies.filter(status='dropped_out')
+		completed_babies = babies.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
+		df = read_frame(dropped_out_babies)
+		rs = df.groupby(['week'])['status'].agg('count')
+		drop_out_count_list = list(rs.values)
+		drop_out_count_list.append(completed_babies.count())
+		total_count = babies.count()
+		drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
+	
+		pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
+		pcv2_rate = pcv1_rate + drop_out_rate[2]
+		dtp3_rate = pcv2_rate + drop_out_rate[3]
+		dtp1_dtp3_drop = dtp3_rate - pcv1_rate
+		dtp_drop_gt_10 = (0 if dtp1_dtp3_drop < 10 else 100)
+		pcv1_pcv2_drop = pcv2_rate - pcv1_rate
+		pcv1_rate = get_rate_array(pcv1_rate)
+		pcv2_rate = get_rate_array(pcv2_rate)
+		dtp3_rate = get_rate_array(dtp3_rate)
+
+		prediction_input = [
+			[1, 100, 
+			dtp3_rate[0], dtp3_rate[1], dtp3_rate[2], dtp3_rate[3], dtp3_rate[4], 0,
+			pcv1_rate[0], pcv1_rate[1], pcv1_rate[2], pcv1_rate[3], pcv1_rate[4], 0,
+			pcv2_rate[0], pcv2_rate[1], pcv2_rate[2], pcv2_rate[3], pcv2_rate[4], 0,
+			dtp_drop_gt_10, dtp1_dtp3_drop, 0, pcv1_pcv2_drop,
+			True, True, True, True, True]
+		]
+
+		scaled_data = scaler.transform(prediction_input)
+		components = pca.transform(scaled_data)
+		vitamin_a_pediction = vitamin_a_pedictor.predict(components)
+		bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
+
+		data = {
+			'region': region, 'drop_out_rate': drop_out_rate, 'prediction_input':prediction_input,
+			'bacterial_rate_pediction': bacterial_rate_pediction, 'vitamin_a_pediction': vitamin_a_pediction
+		}
+		region_list.append(data)
 
 	vitamin_dict = pickle.load(open("ml_models/vitamin_dict.save", "rb"))
 	bacterial_dict = pickle.load(open("ml_models/bacterial_dict.save", "rb"))
+	attribute_list = pickle.load(open("ml_models/attribute_list.save", "rb"))
 
 
 	context = {
 		'vitamin_a_pediction': vitamin_a_pediction,
 		'bacterial_rate_pediction': bacterial_rate_pediction,
 		'vitamin_dict': vitamin_dict,
-		'bacterial_dict': bacterial_dict
+		'bacterial_dict': bacterial_dict,
+		'attribute_list': attribute_list,
+		'region_list': region_list
 	}
 	return render(request, 'prediction.html', context=context)	
 
