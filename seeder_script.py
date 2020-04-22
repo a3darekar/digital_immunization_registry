@@ -26,12 +26,12 @@ for baby in babies:
 		baby.status = 'dropped_out'
 		baby.save()
 	baby.refresh_from_db()
-	vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=baby.week)
 	phcs = HealthCare.objects.all()
 	new_list = list[:list.index(choice)]
 	for week in new_list:
 		phc = random.choice(phcs)
 		appointment = Appointment(baby=baby, administered_at=phc, administered_on=birth_date + timedelta(days=7*week))
+		vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=week)
 		appointment.save()
 		appointment.refresh_from_db()
 		for v in vs:
