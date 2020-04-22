@@ -50,14 +50,14 @@ class BabyAdmin(admin.ModelAdmin):
 		('Administration Information', {'fields': ['tag', 'special_notes', 'text_notifications']})
 	]
 
-	list_filter = ('parent', 'week', 'blood_group', 'gender')
+	list_filter = ('parent', 'week', 'blood_group', 'gender', 'status')
 
 	form = BabyModelForm
 
 	def name(self, obj):
 		return obj.get_full_name()
 
-	list_display = ('name', 'gender', 'birth_date', 'week')
+	list_display = ('name', 'gender', 'birth_date', 'week', 'status')
 
 
 class VaccineScheduleAdmin(admin.ModelAdmin):

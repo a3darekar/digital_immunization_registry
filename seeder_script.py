@@ -5,14 +5,9 @@ import random
 
 fake = Faker()
 seeder = Seed.seeder()
-
 seeder.add_entity(User, 40)
-
 seeder.add_entity(Parent, 40)
-
 seeder.add_entity(Baby, 100, {'week': 0, 'status':'ongoing', 'birth_date': fake.date_between(start_date='-1y', end_date='today')})
-
-
 insertedpks = seeder.execute()
 
 babies = Baby.objects.all()
@@ -20,22 +15,24 @@ list = [0, 6, 10, 14, 24, 36, 40]
 for baby in babies:
 	choice = random.choice(list)
 	birth_date = baby.birth_date
-	baby.refresh_from_db()
 	phcs = HealthCare.objects.all()
 	new_list = list[:list.index(choice)]
 	for week in new_list:
 		phc = random.choice(phcs)
 		administered_on = birth_date + timedelta(days=7*week)
 		appointment = Appointment(baby=baby, administered_at=phc, administered_on=administered_on)
-		vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=week)
 		appointment.save()
-		appointment.refresh_from_db()
+		vs = VaccineSchedule.objects.filter(baby=baby, week=week)
 		for v in vs:
 			v.status='administered'
 			v.save()
-			vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine, status='administered').save()
-		baby.dosage_complete()
-		if baby.week < 36:
+			vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine).save()
+			vr.status='administered'
+			vr.save()
+		if baby.week == 36:
 			baby.status = 'completed'
-			baby.save()
+		else:
+			baby.status = 'dropped_out'
+		baby.save()
+		print(baby.status)
 		
