@@ -171,45 +171,53 @@ def prediction(request):
 			vaccineRecords = VaccineRecord.objects.filter(appointment__in=appointments, vaccine__in=vaccine_0_list)
 			if vaccineRecords:
 				baby_ids.append(appointment.baby.id)
-		babies = Baby.objects.filter(id__in = baby_ids)
-		dropped_out_babies = babies.filter(status='dropped_out')
-		completed_babies = babies.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
-		df = read_frame(dropped_out_babies)
-		rs = df.groupby(['week'])['status'].agg('count')
-		drop_out_count_list = list(rs.values)
-		drop_out_count_list.append(completed_babies.count())
-		total_count = babies.count()
-		drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
-	
-		pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
-		pcv2_rate = pcv1_rate + drop_out_rate[2]
-		dtp3_rate = pcv2_rate + drop_out_rate[3]
-		dtp1_dtp3_drop = dtp3_rate - pcv1_rate
-		dtp_drop_gt_10 = (0 if dtp1_dtp3_drop < 10 else 100)
-		pcv1_pcv2_drop = pcv2_rate - pcv1_rate
-		pcv1_rate = get_rate_array(pcv1_rate)
-		pcv2_rate = get_rate_array(pcv2_rate)
-		dtp3_rate = get_rate_array(dtp3_rate)
+		if baby_ids:
+			babies = Baby.objects.filter(id__in = baby_ids)
+			dropped_out_babies = babies.filter(status='dropped_out')
+			completed_babies = babies.filter(Q(status='completed') | Q(status='ongoing') | Q(status='late'))
+			df = read_frame(dropped_out_babies)
+			rs = df.groupby(['week'])['status'].agg('count')
+			drop_out_count_dict = {0:0, 6:0, 10:0, 14:0, 24:0, 36:0}
+			for i in range(rs.shape[0]):
+				drop_out_count_dict[list(rs.index)[i]]=list(rs.values)[i]
+			drop_out_count_list = list(drop_out_count_dict.values())
+			print(drop_out_count_list)
+			drop_out_count_list.append(completed_babies.count())
+			total_count = babies.count()
+			drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
+		
+			pcv1_rate = drop_out_rate[0] + drop_out_rate[1]
+			pcv2_rate = pcv1_rate + drop_out_rate[2]
+			dtp3_rate = pcv2_rate + drop_out_rate[3]
+			dtp1_dtp3_drop = dtp3_rate - pcv1_rate
+			dtp_drop_gt_10 = (0 if dtp1_dtp3_drop < 10 else 100)
+			pcv1_pcv2_drop = pcv2_rate - pcv1_rate
+			pcv1_rate = get_rate_array(pcv1_rate)
+			pcv2_rate = get_rate_array(pcv2_rate)
+			dtp3_rate = get_rate_array(dtp3_rate)
 
-		prediction_input = [
-			[1, 100, 
-			dtp3_rate[0], dtp3_rate[1], dtp3_rate[2], dtp3_rate[3], dtp3_rate[4], 0,
-			pcv1_rate[0], pcv1_rate[1], pcv1_rate[2], pcv1_rate[3], pcv1_rate[4], 0,
-			pcv2_rate[0], pcv2_rate[1], pcv2_rate[2], pcv2_rate[3], pcv2_rate[4], 0,
-			dtp_drop_gt_10, dtp1_dtp3_drop, 0, pcv1_pcv2_drop,
-			True, True, True, True, True]
-		]
+			prediction_input = [
+				[1, 100, 
+				dtp3_rate[0], dtp3_rate[1], dtp3_rate[2], dtp3_rate[3], dtp3_rate[4], 0,
+				pcv1_rate[0], pcv1_rate[1], pcv1_rate[2], pcv1_rate[3], pcv1_rate[4], 0,
+				pcv2_rate[0], pcv2_rate[1], pcv2_rate[2], pcv2_rate[3], pcv2_rate[4], 0,
+				dtp_drop_gt_10, dtp1_dtp3_drop, 0, pcv1_pcv2_drop,
+				True, True, True, True, True]
+			]
 
-		scaled_data = scaler.transform(prediction_input)
-		components = pca.transform(scaled_data)
-		vitamin_a_pediction = vitamin_a_pedictor.predict(components)
-		bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
+			scaled_data = scaler.transform(prediction_input)
+			components = pca.transform(scaled_data)
+			vitamin_a_pediction = vitamin_a_pedictor.predict(components)
+			bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
 
-		data = {
-			'region': region, 'drop_out_rate': drop_out_rate, 'prediction_input':prediction_input,
-			'bacterial_rate_pediction': bacterial_rate_pediction, 'vitamin_a_pediction': vitamin_a_pediction
-		}
-		region_list.append(data)
+			data = {
+				'region': region, 'drop_out_rate': drop_out_rate, 'prediction_input':prediction_input,
+				'bacterial_rate_pediction': bacterial_rate_pediction, 'vitamin_a_pediction': vitamin_a_pediction
+			}
+			region_list.append(data)
+
+		else:
+			region_list.append(None)
 
 	vitamin_dict = pickle.load(open("ml_models/vitamin_dict.save", "rb"))
 	bacterial_dict = pickle.load(open("ml_models/bacterial_dict.save", "rb"))
@@ -217,8 +225,6 @@ def prediction(request):
 
 
 	context = {
-		'vitamin_a_pediction': vitamin_a_pediction,
-		'bacterial_rate_pediction': bacterial_rate_pediction,
 		'vitamin_dict': vitamin_dict,
 		'bacterial_dict': bacterial_dict,
 		'attribute_list': attribute_list,
