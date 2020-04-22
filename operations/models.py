@@ -236,7 +236,7 @@ class Appointment(models.Model):
 	baby = models.ForeignKey(Baby, related_name="vaccine_records", on_delete=models.CASCADE)
 	status = models.CharField(max_length=50, choices=Appointment_status, default='scheduled')
 	administered_on = models.DateTimeField(default=datetime.now)
-	administered_at = models.ForeignKey(HealthCare, null=True, related_name="phc", on_delete=models.SET_NULL)
+	administered_at = models.ForeignKey(HealthCare, related_name="phc", on_delete=models.PROTECT)
 
 	class Meta:
 		verbose_name = 'Appointment'
