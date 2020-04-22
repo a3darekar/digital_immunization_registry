@@ -6,11 +6,11 @@ import random
 fake = Faker()
 seeder = Seed.seeder()
 
-seeder.add_entity(User, 1)
+seeder.add_entity(User, 40)
 
-seeder.add_entity(Parent, 1)
+seeder.add_entity(Parent, 40)
 
-seeder.add_entity(Baby, 10, {'week': 0, 'status':'ongoing', 'birth_date': fake.date_between(start_date='-1y', end_date='today')})
+seeder.add_entity(Baby, 100, {'week': 0, 'status':'ongoing', 'birth_date': fake.date_between(start_date='-1y', end_date='today')})
 
 
 insertedpks = seeder.execute()
@@ -23,11 +23,9 @@ for baby in babies:
 	baby.refresh_from_db()
 	phcs = HealthCare.objects.all()
 	new_list = list[:list.index(choice)]
-	print(new_list)
 	for week in new_list:
 		phc = random.choice(phcs)
 		administered_on = birth_date + timedelta(days=7*week)
-		print(administered_on)
 		appointment = Appointment(baby=baby, administered_at=phc, administered_on=administered_on)
 		vs = VaccineSchedule.objects.filter(baby=baby, status='pending', week=week)
 		appointment.save()

@@ -181,7 +181,6 @@ def prediction(request):
 			for i in range(rs.shape[0]):
 				drop_out_count_dict[list(rs.index)[i]]=list(rs.values)[i]
 			drop_out_count_list = list(drop_out_count_dict.values())
-			print(drop_out_count_list)
 			drop_out_count_list.append(completed_babies.count())
 			total_count = babies.count()
 			drop_out_rate = [ x/total_count*100 for x in drop_out_count_list]
