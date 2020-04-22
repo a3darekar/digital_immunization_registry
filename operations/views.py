@@ -206,8 +206,8 @@ def prediction(request):
 
 			scaled_data = scaler.transform(prediction_input)
 			components = pca.transform(scaled_data)
-			vitamin_a_pediction = vitamin_a_pedictor.predict(components)
-			bacterial_rate_pediction = bacterial_rate_pedictor.predict(components)
+			vitamin_a_pediction = vitamin_a_pedictor.predict_proba(components)
+			bacterial_rate_pediction = bacterial_rate_pedictor.predict_proba(components)
 
 			data = {
 				'region': region, 'drop_out_rate': drop_out_rate, 'prediction_input':prediction_input,

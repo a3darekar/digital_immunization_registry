@@ -29,10 +29,10 @@ for baby in babies:
 			vr = VaccineRecord(appointment=appointment, vaccine=v.vaccine).save()
 			vr.status='administered'
 			vr.save()
-		if baby.week == 36:
-			baby.status = 'completed'
-		else:
-			baby.status = 'dropped_out'
-		baby.save()
-		print(baby.status)
-		
+	if baby.week == 36:
+		baby.status = 'completed'
+	else:
+		baby.status = 'dropped_out'
+	baby.save()
+	print(baby.status)
+	
