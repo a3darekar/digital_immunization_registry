@@ -36,7 +36,7 @@ numpy==1.16.5
 oauthlib==2.1.0
 pandas==0.24.2
 phonenumberslite==8.9.13
-Pillow==5.4.1
+Pillow==8.1.1
 promise==2.2.1
 pycparser==2.19
 pyfcm==1.4.5
