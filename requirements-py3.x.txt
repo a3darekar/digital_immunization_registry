@@ -22,7 +22,7 @@ django-pandas==0.6.1
 django-phonenumber-field==4.0.0
 django-rest-auth==0.9.5
 django-seed==0.2.2
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 entrypoints==0.3
 Faker==4.0.3
 fcm-django==0.3.4
