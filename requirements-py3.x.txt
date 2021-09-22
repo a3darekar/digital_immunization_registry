@@ -12,7 +12,7 @@ chardet==3.0.4
 cycler==0.10.0
 decorator==4.4.2
 defusedxml==0.6.0
-Django==3.0.5
+Django==3.1.13
 django-allauth==0.41.0
 django-celery==3.3.1
 django-celery-results==1.2.1
