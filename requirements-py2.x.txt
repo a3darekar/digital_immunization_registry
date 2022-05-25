@@ -40,7 +40,7 @@ Pillow==5.4.1
 promise==2.2.1
 pycparser==2.19
 pyfcm==1.4.5
-PyJWT==1.6.4
+PyJWT==2.4.0
 pyOpenSSL==18.0.0
 PyPDF2==1.26.0
 python-crontab==2.3.6
