@@ -48,7 +48,7 @@ python-dateutil==2.8.0
 python-openid==2.2.5
 pytz==2018.5
 redis==3.3.6
-reportlab==3.5.13
+reportlab==3.5.55
 requests==2.19.1
 requests-oauthlib==1.0.0
 requests-toolbelt==0.8.0
